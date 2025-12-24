@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Upload Drone Pictures</title>
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Theme Configuration -->
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#136dec",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101822",
+            "surface-light": "#ffffff",
+            "surface-dark": "#1e293b",
+          },
+          fontFamily: {
+            "display": ["Space Grotesk", "sans-serif"],
+            "body": ["Noto Sans", "sans-serif"],
+          },
+          borderRadius: {
+            "DEFAULT": "0.375rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+
+<body
+  class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-slate-100 pb-24">
+  <!-- TopAppBar -->
+  <div
+    class="sticky top-0 z-50 flex items-center justify-between bg-surface-light/90 dark:bg-background-dark/90 backdrop-blur-md p-4 border-b border-slate-200 dark:border-slate-800">
+    <a class="flex size-10 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-900 dark:text-white"
+      href="index.html">
+      <span class="material-symbols-outlined">arrow_back_ios_new</span>
+    </a>
+    <h2 class="text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Upload Photos</h2>
+  </div>
+  <div class="flex flex-col gap-6 p-4 max-w-lg mx-auto w-full">
+    <!-- ActionPanel: Photo Tips -->
+    <div class="@container">
+      <div
+        class="relative flex flex-col gap-4 rounded-xl border border-blue-100 bg-blue-50/50 dark:bg-blue-900/20 dark:border-blue-800 p-4">
+        <button
+          class="absolute top-3 right-3 text-blue-400 hover:text-blue-600 dark:text-blue-300 dark:hover:text-blue-100">
+          <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+        <div class="flex items-start gap-3">
+          <div
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-primary dark:bg-blue-800 dark:text-blue-200">
+            <span class="material-symbols-outlined">light_mode</span>
+          </div>
+          <div class="flex flex-col gap-1 pr-6">
+            <p class="text-base font-bold leading-tight text-slate-900 dark:text-white">Photo Tips</p>
+            <p class="text-sm font-normal leading-relaxed text-slate-600 dark:text-slate-300">
+              Photograph the damaged area in bright light. Try to capture multiple angles of broken rotors or frame
+              cracks.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- EmptyState (Repurposed as Main Upload Action) -->
+    <div class="group cursor-pointer">
+      <div
+        class="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-primary/30 bg-white dark:bg-surface-dark px-6 py-8 transition-colors group-hover:border-primary group-hover:bg-blue-50/30 dark:group-hover:bg-surface-dark/80">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-1">
+          <span class="material-symbols-outlined text-2xl">add_a_photo</span>
+        </div>
+        <div class="text-center">
+          <p class="text-base font-bold text-slate-900 dark:text-white">Add New Photo</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Tap to open camera or gallery</p>
+        </div>
+      </div>
+    </div>
+    <!-- HeadlineText -->
+    <div class="flex items-center justify-between pt-2">
+      <h3 class="text-xl font-bold leading-tight tracking-tight text-slate-900 dark:text-white">Uploaded Evidence</h3>
+      <span
+        class="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">2
+        items</span>
+    </div>
+    <!-- ImageGrid (Modified for Inputs) -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <!-- Card 1 -->
+      <div
+        class="group relative flex flex-col gap-3 rounded-xl bg-white p-3 shadow-sm border border-slate-100 dark:bg-surface-dark dark:border-slate-800">
+        <div class="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-slate-200">
+          <img alt="Close up of a damaged drone rotor arm on a workbench"
+            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            data-alt="Close up of a damaged drone rotor arm on a workbench"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgUuJ7YfiKKvsskF1ZqlR2k8aBRXoMTr69agzOuLQsK47Ey6KNoMThl8JqTBSh1TR41Fe7XE9bAsQxZaL-nWt4tjvkV6ZGdes6aQQHS5dJI76zf9NtO7NVr5R2-g1yVChH1UnvMiq4AH6OXvKE30_Xy6zthF2CMlWsvJRvWjg2ECaoZNBj9StHkNqKGaekA4N_5uON9MNRzfcafCyNUklp62R8ctJGUXaUwo38EsfavUTbL4gPAchnFf-z_KQ2gLaI_Ku2z9OD4Ik" />
+          <button
+            class="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-red-500 transition-colors">
+            <span class="material-symbols-outlined text-lg">delete</span>
+          </button>
+          <div
+            class="absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-md">
+            JPEG • 2.4MB
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Caption</label>
+          <div class="relative">
+            <input
+              class="w-full rounded-lg border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-900 placeholder-slate-400 focus:border-primary focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+              type="text" value="Cracked rotor arm front-left" />
+            <span class="material-symbols-outlined absolute right-3 top-2.5 text-slate-400 text-lg">edit</span>
+          </div>
+        </div>
+      </div>
+      <!-- Card 2 -->
+      <div
+        class="group relative flex flex-col gap-3 rounded-xl bg-white p-3 shadow-sm border border-slate-100 dark:bg-surface-dark dark:border-slate-800">
+        <div class="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-slate-200">
+          <img alt="Top down view of a drone with bent propeller blades"
+            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            data-alt="Top down view of a drone with bent propeller blades"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4i4WgcHbsRVrK1YbfvTWEFpn-oaks-uZqpDz8T-4diuWEqF6tnPavrGNpB5SP4yIH3QqIi4TwODIQwKb7fOr3WnMCuCkLYXWgcSaf2pMkAMKme26eLx8SkERvXPzme7XLp6-vbhMMcX0Ttt8GctK6oJEqE7GqlbWPOTktW94K28V8A6GnaqBiz6KlWxwVnedXqkdd1wTihGoBujtXUwG_QIdpsGBfr8DO-OWNSSazAyjMmekzdLsoxji_tmneXG8p6TyfhsKf4UY" />
+          <button
+            class="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-red-500 transition-colors">
+            <span class="material-symbols-outlined text-lg">delete</span>
+          </button>
+          <!-- Progress Overlay Example -->
+          <div class="hidden absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+            <div class="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Caption</label>
+          <div class="relative">
+            <input
+              class="w-full rounded-lg border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-900 placeholder-slate-400 focus:border-primary focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+              placeholder="Describe damage..." type="text" />
+            <span class="material-symbols-outlined absolute right-3 top-2.5 text-slate-400 text-lg">edit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="h-4"></div>
+  </div>
+  <!-- Sticky Footer -->
+  <div
+    class="fixed bottom-0 left-0 z-40 w-full border-t border-slate-200 bg-white/90 p-4 backdrop-blur-md dark:border-slate-800 dark:bg-background-dark/90">
+    <div class="mx-auto flex w-full max-w-lg items-center gap-4">
+      <div class="flex flex-col">
+        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Total Size</span>
+        <span class="text-sm font-bold text-slate-900 dark:text-white">4.8 MB</span>
+      </div>
+      <button
+        class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-blue-600 active:scale-[0.98]">
+        <span>Save &amp; Continue</span>
+        <span class="material-symbols-outlined text-lg">arrow_forward</span>
+      </button>
+    </div>
+    <!-- Safe area spacer for iOS home indicator -->
+    <div class="h-1 w-full"></div>
+  </div>
+</body>
+
+</html>

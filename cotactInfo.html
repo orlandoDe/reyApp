@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Client Details Form</title>
+    <!-- Google Fonts: Space Grotesk & Noto Sans -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&amp;family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Material Symbols -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Theme Configuration -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#136dec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101822",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a2430",
+                        "input-bg-light": "#e7ecf3",
+                        "input-bg-dark": "#1e2936",
+                        "text-main-light": "#0d131b",
+                        "text-main-dark": "#ffffff",
+                        "text-sub-light": "#4c6c9a",
+                        "text-sub-dark": "#94a3b8",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Custom scrollbar hide for clean mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark font-display antialiased min-h-screen flex flex-col items-center">
+    <!-- Mobile Container Simulation -->
+    <div
+        class="relative flex h-full min-h-screen w-full max-w-md flex-col overflow-x-hidden bg-background-light dark:bg-background-dark shadow-2xl">
+        <!-- TopAppBar -->
+        <header
+            class="sticky top-0 z-50 flex items-center justify-between bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm p-4 pb-2 transition-colors duration-300">
+            <a class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-text-main-light dark:text-text-main-dark"
+                href="index.html">
+                <span class="material-symbols-outlined text-[24px]">arrow_back_ios_new</span>
+            </a>
+            <h2
+                class="text-text-main-light dark:text-text-main-dark text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">
+                Contact Info</h2>
+        </header>
+        <!-- PageIndicators (Progress) -->
+        <div class="flex w-full flex-col items-center justify-center pt-2 pb-6 px-4">
+            <div class="flex w-full items-center justify-between px-8 mb-2">
+                <span class="text-xs font-medium text-text-sub-light dark:text-text-sub-dark">Step 2 of 4</span>
+                <span class="text-xs font-medium text-primary">50%</span>
+            </div>
+            <div class="flex w-full flex-row items-center justify-center gap-2">
+                <div class="h-1.5 w-full rounded-full bg-primary/30"></div>
+                <div class="h-1.5 w-full rounded-full bg-primary shadow-[0_0_10px_rgba(19,109,236,0.5)]"></div>
+                <div class="h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                <div class="h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-700"></div>
+            </div>
+        </div>
+        <!-- Scrollable Content -->
+        <main class="flex-1 flex flex-col px-5 pb-24">
+            <!-- HeadlineText -->
+            <div class="mb-2">
+                <h3
+                    class="text-text-main-light dark:text-text-main-dark tracking-tight text-3xl font-bold leading-tight text-left">
+                    Who is this <br />
+                    <span class="text-primary">repair for?</span>
+                </h3>
+            </div>
+            <!-- BodyText -->
+            <div class="mb-8">
+                <p class="text-text-sub-light dark:text-text-sub-dark text-base font-normal leading-relaxed">
+                    We need your contact details to send you status updates regarding your drone and the final invoice.
+                </p>
+            </div>
+            <!-- Form Fields -->
+            <form class="flex flex-col gap-6" onsubmit="event.preventDefault();">
+                <!-- Full Name -->
+                <div class="group">
+                    <label class="block mb-2 text-sm font-medium text-text-main-light dark:text-text-main-dark"
+                        for="fullName">
+                        Full Name
+                    </label>
+                    <div class="relative">
+                        <div
+                            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-text-sub-light dark:text-text-sub-dark group-focus-within:text-primary transition-colors">
+                            <span class="material-symbols-outlined">person</span>
+                        </div>
+                        <input autocomplete="name"
+                            class="form-input block w-full pl-12 pr-4 py-4 rounded-xl border-none bg-input-bg-light dark:bg-input-bg-dark text-text-main-light dark:text-text-main-dark placeholder:text-text-sub-light/60 dark:placeholder:text-text-sub-dark/50 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-surface-dark transition-all duration-200 text-base shadow-sm"
+                            id="fullName" placeholder="John Doe" type="text" value="Alex Morgan" />
+                        <div
+                            class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-green-500 opacity-100 transition-opacity">
+                            <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Phone Number -->
+                <div class="group">
+                    <label class="block mb-2 text-sm font-medium text-text-main-light dark:text-text-main-dark"
+                        for="phone">
+                        Mobile Number
+                    </label>
+                    <div class="relative">
+                        <div
+                            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-text-sub-light dark:text-text-sub-dark group-focus-within:text-primary transition-colors">
+                            <span class="material-symbols-outlined">call</span>
+                        </div>
+                        <input autocomplete="tel"
+                            class="form-input block w-full pl-12 pr-4 py-4 rounded-xl border-none bg-input-bg-light dark:bg-input-bg-dark text-text-main-light dark:text-text-main-dark placeholder:text-text-sub-light/60 dark:placeholder:text-text-sub-dark/50 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-surface-dark transition-all duration-200 text-base shadow-sm"
+                            id="phone" placeholder="+1 (555) 000-0000" type="tel" />
+                    </div>
+                </div>
+                <!-- Email Address -->
+                <div class="group">
+                    <label class="block mb-2 text-sm font-medium text-text-main-light dark:text-text-main-dark"
+                        for="email">
+                        Email Address
+                    </label>
+                    <div class="relative">
+                        <div
+                            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-text-sub-light dark:text-text-sub-dark group-focus-within:text-primary transition-colors">
+                            <span class="material-symbols-outlined">mail</span>
+                        </div>
+                        <input autocomplete="email"
+                            class="form-input block w-full pl-12 pr-4 py-4 rounded-xl border-none bg-input-bg-light dark:bg-input-bg-dark text-text-main-light dark:text-text-main-dark placeholder:text-text-sub-light/60 dark:placeholder:text-text-sub-dark/50 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-surface-dark transition-all duration-200 text-base shadow-sm"
+                            id="email" placeholder="john@example.com" type="email" />
+                    </div>
+                </div>
+                <!-- Notification Preference (Toggle) -->
+                <div
+                    class="mt-2 flex items-center justify-between p-4 bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center justify-center size-8 rounded-full bg-primary/10 text-primary">
+                            <span class="material-symbols-outlined text-[18px]">notifications_active</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-sm font-bold text-text-main-light dark:text-text-main-dark">SMS
+                                Updates</span>
+                            <span class="text-xs text-text-sub-light dark:text-text-sub-dark">Get instant repair
+                                alerts</span>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input checked="" class="sr-only peer" type="checkbox" value="" />
+                        <div
+                            class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary">
+                        </div>
+                    </label>
+                </div>
+            </form>
+        </main>
+        <!-- Fixed Bottom Action Area -->
+        <div
+            class="fixed bottom-0 left-0 right-0 z-50 p-5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md flex justify-center w-full">
+            <div class="w-full max-w-md flex flex-col gap-3">
+                <button
+                    class="w-full bg-primary hover:bg-blue-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group">
+                    Save &amp; Continue
+                    <span
+                        class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </button>
+                <div class="flex items-center justify-center gap-1.5 text-center">
+                    <span
+                        class="material-symbols-outlined text-[14px] text-text-sub-light/70 dark:text-text-sub-dark/70">lock</span>
+                    <p class="text-[11px] text-text-sub-light/70 dark:text-text-sub-dark/70">
+                        We promise not to spam you. Only repair updates.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
