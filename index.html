@@ -1,18 +1,30 @@
 <!DOCTYPE html>
 <html class="light" lang="en">
+
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>DroneFix - Professional Drone Repair Service</title>
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com" rel="preconnect"/>
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-    
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>DroneFix - Professional Drone Repair</title>
+    <!-- React & Related Libraries -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/history@5/umd/history.development.js"></script>
+    <script src="https://unpkg.com/react-router@6.3.0/umd/react-router.development.js"></script>
+    <script src="https://unpkg.com/react-router-dom@6.3.0/umd/react-router-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet">
+
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -26,852 +38,700 @@
                         "surface-dark": "#1e293b",
                         "input-bg-light": "#e7ecf3",
                         "input-bg-dark": "#1e2936",
-                        "text-main-light": "#0d131b",
-                        "text-main-dark": "#ffffff",
-                        "text-sub-light": "#4c6c9a",
-                        "text-sub-dark": "#94a3b8",
                     },
                     fontFamily: {
                         "display": ["Space Grotesk", "Noto Sans", "sans-serif"],
                         "body": ["Noto Sans", "sans-serif"]
                     },
                     borderRadius: {
-                        "DEFAULT": "0.25rem", 
-                        "lg": "0.5rem", 
-                        "xl": "0.75rem", 
+                        "DEFAULT": "0.375rem",
+                        "md": "0.375rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
                         "2xl": "1rem",
                         "3xl": "1.5rem",
                         "full": "9999px"
                     },
-                    animation: {
-                        fadeIn: 'fadeIn 0.2s ease-in-out',
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0', transform: 'translateY(-10px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        }
-                    }
                 },
             },
         }
     </script>
     <style>
-        body { min-height: max(884px, 100dvh); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body {
+            min-height: 100vh;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
 
-    <!-- React Dependencies -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/history@5/umd/history.development.js"></script>
-    <script src="https://unpkg.com/react-router@6.3.0/umd/react-router.development.js"></script>
-    <script src="https://unpkg.com/react-router-dom@6.3.0/umd/react-router-dom.development.js"></script>
-    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-<style>
-    body {
-      min-height: max(884px, 100dvh);
-    }
-  </style>
-  </head>
-<body class="bg-background-light dark:bg-background-dark text-[#0d131b] dark:text-white font-display overflow-x-hidden antialiased selection:bg-primary/20">
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased">
+    <div id="root"></div>
 
-<div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+        const { createRoot } = ReactDOM;
+        const { MemoryRouter, Routes, Route, Link, useNavigate, useLocation } = ReactRouterDOM;
 
-<script type="text/babel">
-    const { useState, useEffect } = React;
-    const { createRoot } = ReactDOM;
-    const { MemoryRouter, Routes, Route, Link, useNavigate, useLocation } = ReactRouterDOM;
-
-    // --- Shared Layout Component ---
-    // Used to wrap pages that share common container styles (mobile wrapper)
-    const Layout = ({ children, showBottomNav = false }) => {
-        return (
-            <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto shadow-xl bg-background-light dark:bg-background-dark border-x border-slate-200 dark:border-slate-800">
-                <div className="flex-1 flex flex-col h-full relative pb-20"> 
+        // --- Layout Component ---
+        const AppLayout = ({ children, hideNav = false }) => {
+            const navigate = useNavigate();
+            return (
+                <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark border-x border-slate-200 dark:border-slate-800">
                     {children}
                 </div>
-                {showBottomNav && <BottomNavigation />}
-            </div>
-        );
-    };
+            );
+        };
 
-    const BottomNavigation = () => {
-        const navigate = useNavigate();
-        const location = useLocation();
-
-        const isActive = (path) => location.pathname === path;
-
-        return (
-            <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-slate-200 bg-white/90 px-4 pb-6 pt-3 backdrop-blur-xl dark:border-slate-800 dark:bg-surface-dark/90 max-w-md mx-auto">
-                <div onClick={() => navigate('/hub')} className={`group flex flex-1 flex-col items-center justify-end gap-1 cursor-pointer transition-colors ${isActive('/hub') ? 'text-primary' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'}`}>
-                    <div className={`flex h-8 items-center justify-center rounded-full px-4 transition-colors ${isActive('/hub') ? 'bg-primary/10' : ''}`}>
-                        <span className="material-symbols-outlined text-[24px]">grid_view</span>
+        // --- Screen 1: Welcome ---
+        const WelcomeScreen = () => {
+            const navigate = useNavigate();
+            return (
+                <AppLayout>
+                    <div className="flex items-center p-4 pb-2 justify-between sticky top-0 z-50 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md">
+                        <div className="text-primary flex size-12 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                            <span className="material-symbols-outlined text-[24px]">build</span>
+                        </div>
+                        <h2 className="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">DroneFix</h2>
                     </div>
-                    <p className="text-[11px] font-bold leading-normal tracking-wide">Hub</p>
-                </div>
-                <div onClick={() => navigate('/my-drones')} className={`group flex flex-1 flex-col items-center justify-end gap-1 cursor-pointer transition-colors ${isActive('/my-drones') ? 'text-primary' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'}`}>
-                    <div className={`flex h-8 items-center justify-center rounded-full px-4 transition-colors ${isActive('/my-drones') ? 'bg-primary/10' : ''}`}>
-                        <span className="material-symbols-outlined text-[24px]">toc</span>
-                    </div>
-                    <p className="text-[11px] font-medium leading-normal tracking-wide">My Drones</p>
-                </div>
-                 <div onClick={() => navigate('/track')} className={`group flex flex-1 flex-col items-center justify-end gap-1 cursor-pointer transition-colors ${isActive('/track') ? 'text-primary' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'}`}>
-                    <div className={`flex h-8 items-center justify-center rounded-full px-4 transition-colors ${isActive('/track') ? 'bg-primary/10' : ''}`}>
-                         <span className="material-symbols-outlined text-[24px]">build_circle</span>
-                    </div>
-                    <p className="text-[11px] font-medium leading-normal tracking-wide">Status</p>
-                </div>
-                <div className="group flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 transition-colors hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 cursor-pointer">
-                    <div className="flex h-8 items-center justify-center">
-                        <span className="material-symbols-outlined text-[24px]">support_agent</span>
-                    </div>
-                    <p className="text-[11px] font-medium leading-normal tracking-wide">Support</p>
-                </div>
-            </nav>
-        );
-    };
-
-    // --- Screen 1: Welcome / Home ---
-    const HomeScreen = () => {
-        const navigate = useNavigate();
-
-        return (
-            <Layout>
-                {/* Top App Bar */}
-                <div className="flex items-center p-4 pb-2 justify-between sticky top-0 z-50 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md">
-                    <div className="text-primary flex size-12 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                        <span className="material-symbols-outlined text-[24px]">build</span>
-                    </div>
-                    <h2 className="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">DroneFix</h2>
-                </div>
-                {/* Scrollable Content */}
-                <div className="flex-1 flex flex-col">
-                    {/* Hero Image */}
-                    <div className="@container px-4 py-3">
-                        <div className="w-full bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden rounded-xl min-h-[320px] shadow-lg relative" style={{backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuB9zt5oIYAh0wHC73jMGSKZDrgAuWg690F4768EAU297T634cb0CW3te9rhSON9LkPXDE_hi9YKrluPz9GMRM5j1MWRCV2NmYN2gMPyQxVNXNni9PRSgWyU2fFXqdg9ahxS8o0hnZOl2JcYgS9CDlS9869z_BFvvbiy18VBy-947157MyQ3pTiXxPXpLkhWE2dGO-KWH06cI47vijQr3rlSnI23rRGUOTkwzjTMNfZgjB4LQ6UlCy7-pmOz6xiHguHUa8HxeiQMXDo")'}}>
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                            <div className="relative z-10 p-6">
-                                <span className="inline-block px-3 py-1 bg-primary text-white text-xs font-bold rounded-full mb-2 uppercase tracking-wider">Premium Service</span>
+                    <div className="flex-1 flex flex-col">
+                        <div className="px-4 py-3">
+                            <div className="w-full bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden rounded-xl min-h-[320px] shadow-lg relative" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuB9zt5oIYAh0wHC73jMGSKZDrgAuWg690F4768EAU297T634cb0CW3te9rhSON9LkPXDE_hi9YKrluPz9GMRM5j1MWRCV2NmYN2gMPyQxVNXNni9PRSgWyU2fFXqdg9ahxS8o0hnZOl2JcYgS9CDlS9869z_BFvvbiy18VBy-947157MyQ3pTiXxPXpLkhWE2dGO-KWH06cI47vijQr3rlSnI23rRGUOTkwzjTMNfZgjB4LQ6UlCy7-pmOz6xiHguHUa8HxeiQMXDo")' }}>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                                <div className="relative z-10 p-6">
+                                    <span className="inline-block px-3 py-1 bg-primary text-white text-xs font-bold rounded-full mb-2 uppercase tracking-wider">Premium Service</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="px-6 pt-2 pb-4">
+                            <h1 className="text-slate-900 dark:text-white tracking-tight text-[32px] font-bold leading-[1.1] mb-3">Back to the Skies</h1>
+                            <p className="text-slate-500 dark:text-slate-400 text-base font-normal leading-relaxed">
+                                Professional diagnostics and repair for all major drone models. We bring your gear back to life with certified parts.
+                            </p>
+                        </div>
+                        <div className="px-4 pb-6">
+                            <h3 className="text-slate-900 dark:text-white text-sm font-semibold uppercase tracking-wider mb-4 px-2 opacity-70">Our Expertise</h3>
+                            <div className="grid grid-cols-2 gap-3">
+                                {[
+                                    { icon: 'troubleshoot', label: 'Diagnostics', sub: 'Full system check' },
+                                    { icon: 'lens', label: 'Lens Fix', sub: 'Gimbal & Sensor' },
+                                    { icon: 'mode_fan', label: 'Propellers', sub: 'Replacement & Balance' },
+                                    { icon: 'battery_charging_full', label: 'Battery', sub: 'Health & Power' }
+                                ].map((s, i) => (
+                                    <div key={i} className="flex flex-col gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-4 items-start transition-all hover:border-primary/50 group cursor-pointer">
+                                        <div className="text-primary p-2 bg-primary/10 rounded-lg group-hover:bg-primary group-hover:text-white transition-colors">
+                                            <span className="material-symbols-outlined text-[24px]">{s.icon}</span>
+                                        </div>
+                                        <div>
+                                            <h2 className="text-slate-900 dark:text-white text-base font-bold leading-tight">{s.label}</h2>
+                                            <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">{s.sub}</p>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
-                    {/* Headline & Subtext */}
-                    <div className="px-6 pt-2 pb-4">
-                        <h1 className="text-slate-900 dark:text-white tracking-tight text-[32px] font-bold leading-[1.1] mb-3">Back to the Skies</h1>
-                        <p className="text-slate-500 dark:text-slate-400 text-base font-normal leading-relaxed">
-                            Professional diagnostics and repair for all major drone models. We bring your gear back to life with certified parts.
-                        </p>
+                    <div className="p-4 bg-background-light dark:bg-background-dark border-t border-slate-200 dark:border-slate-800 sticky bottom-0 z-50">
+                        <div className="flex flex-col gap-3">
+                            <button onClick={() => navigate('/register')} className="flex items-center justify-center gap-2 w-full rounded-lg bg-primary px-4 py-4 text-white font-bold text-lg shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all active:scale-[0.98]">
+                                <span className="material-symbols-outlined">add_circle</span>
+                                Register New Drone
+                            </button>
+                            <button onClick={() => navigate('/my-drones')} className="flex items-center justify-center gap-2 w-full rounded-lg border-2 border-slate-200 dark:border-slate-700 bg-transparent px-4 py-3.5 text-slate-700 dark:text-slate-300 font-bold text-base hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-[0.98]">
+                                <span className="material-symbols-outlined">pending_actions</span>
+                                Track Repair Status
+                            </button>
+                        </div>
+                        <div className="flex justify-center gap-6 mt-4 pb-2">
+                            <Link to="/hub" className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-primary">Dashboard Hub</Link>
+                            <a className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-primary" href="#">Contact Support</a>
+                        </div>
                     </div>
-                    {/* Services Grid */}
-                    <div className="px-4 pb-6">
-                        <h3 className="text-slate-900 dark:text-white text-sm font-semibold uppercase tracking-wider mb-4 px-2 opacity-70">Our Expertise</h3>
-                        <div className="grid grid-cols-2 gap-3">
-                            {[
-                                { icon: "troubleshoot", title: "Diagnostics", sub: "Full system check" },
-                                { icon: "lens", title: "Lens Fix", sub: "Gimbal & Sensor" },
-                                { icon: "mode_fan", title: "Propellers", sub: "Replacement & Balance" },
-                                { icon: "battery_charging_full", title: "Battery", sub: "Health & Power" }
-                            ].map((item, i) => (
-                                <div key={i} className="flex flex-col gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-4 items-start transition-all hover:border-primary/50 group cursor-pointer">
-                                    <div className="text-primary p-2 bg-primary/10 rounded-lg group-hover:bg-primary group-hover:text-white transition-colors">
-                                        <span className="material-symbols-outlined text-[24px]">{item.icon}</span>
+                </AppLayout>
+            );
+        };
+
+        // --- Screen 2: My Drones ---
+        const MyDronesScreen = () => {
+            const navigate = useNavigate();
+            const [filter, setFilter] = useState('Active Repairs');
+
+            const drones = [
+                { id: '88219', name: 'DJI Mavic 3', sn: '159357284', status: 'In Diagnostics', progress: 25, color: 'blue', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCfuaQsbP2m3Fq6OjlcfPMRCBTq-xqVtwsqM9L90UQVkyqNzmPZscdsKShZT5ODh2mW0-4WLPhxOn_DpmfwXmUCPdQLIOLWZAn2WAg-Q3oAw5wwPjmW27FkbPfgMEdP-k4lY8Tkssi_ih6RTWCssuPAlHi5MmLfauf192nzvZR8ge5VGpgWmrYDdU0YBtWE1scA7a8fVenIGl7sI5ESKTrFW1Wh4MP_6b_URKgKvrhPu7sUxCx9Yn6ND1cZaZnVDUvAXTBU5zAYSXk' },
+                { id: '84729', name: 'DJI Mini 2', sn: '847291038', status: 'Waiting for Parts', progress: 50, color: 'orange', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCExA2DWR_X7sfJGpQUplveez75X-a7Dd7kOkjQuFqWixRRCkMKLD2pLJnfsFf8-W1isXL04wcCrvqvDQxBHfrEInx1fH93fb7MVZgeQJXgspHANwWgMMHRPbHVr-HJb__D7aMznz-iaMkYTol4FAssDzDol165ymBq3dWEZc3YZKa-d83BmetFFXa_pzvxXBjaXi1XbjwQbkDTVzXZ0iieVgY-ie6tIlDqZyrqh1wZeyyzCrdMaX6i6AyXp1l3B125xzvJkWTU_LE' },
+                { id: '99283', name: 'Mavic Air', sn: '992837461', status: 'Ready for Pickup', progress: 100, color: 'green', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCshgBAE7h9JZ0tCSxRjlkIWnJMDZSEu9sfwO-qN_LnpAehDqnkEKX5q4pXd978rDJw89g8vLSDKskqIVp-NPjAA7W41ZUNSt6x9sDNow7cPNwqyWzARBxuA-pJABm3w71djvSgsvRDkvJhfgVTgchf_nlqwMH12FJheQJjSlzZkOpowNSsepkBWDarTAyyJFDR4tSaXx4fG691FQUB6Zv1WABGmgVWUF9M5aO4gvUyjhHmc2SnboTnPCmaNKwyp8-lFYOPUWO9Sxs' }
+            ];
+
+            return (
+                <AppLayout>
+                    <header className="flex flex-col gap-2 px-5 pt-8 pb-4">
+                        <div className="flex items-center justify-between h-12">
+                            <div className="flex flex-col">
+                                <span className="text-slate-500 dark:text-slate-400 text-sm font-medium">Welcome back, Alex</span>
+                                <h1 className="text-slate-900 dark:text-white text-3xl font-bold leading-tight tracking-tight">My Drones</h1>
+                            </div>
+                            <button className="relative shrink-0 overflow-hidden rounded-full ring-2 ring-white dark:ring-slate-700 shadow-md size-12">
+                                <img alt="User Profile" className="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwNlUvFFbyyfq0HeUNORs-hOYm5zynu6jSp-tmUVwDQctCQ0X66guhiKPLbOSUMiN051Mpp0KsLNyEnWJMs0HrlmROt5U-bO-9PyAbDClTXi6X_i2OxljdEnbPDm1fN83tglL_txdlHkTEW0ppfmpGN7LYmhHuV1zcuCAs3YbyHlpH_kppVRzDS3OqOJRDWYFKHjYaky5Wi_Kc1stJYopi-8rWgc6keWYXMILhjge9pKlKoXnBxF0fVyJ0kh8zTwKJFt1kkwe1B6Q" />
+                            </button>
+                        </div>
+                    </header>
+                    <div className="px-5 py-2">
+                        <div className="flex h-12 w-full items-center justify-center rounded-xl bg-slate-200 dark:bg-slate-800 p-1">
+                            {['Active Repairs', 'All Drones'].map(t => (
+                                <button key={t} onClick={() => setFilter(t)} className={`flex-1 h-full rounded-lg text-sm font-bold transition-all ${filter === t ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 dark:text-slate-400'}`}>
+                                    {t}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-4 px-5 py-4 overflow-y-auto mb-20">
+                        {drones.map((d, i) => (
+                            <div key={i} onClick={() => navigate('/status')} className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-4 shadow-sm border border-slate-100 dark:border-slate-700 active:scale-[0.98] transition-transform duration-200 cursor-pointer">
+                                <div className="flex gap-4">
+                                    <div className="shrink-0 bg-center bg-no-repeat bg-cover rounded-xl size-[80px]" style={{ backgroundImage: `url(${d.img})` }}></div>
+                                    <div className="flex flex-1 flex-col justify-between py-0.5">
+                                        <div>
+                                            <div className="flex justify-between items-start">
+                                                <h3 className="text-slate-900 dark:text-white text-lg font-bold leading-tight">{d.name}</h3>
+                                                <span className="material-symbols-outlined text-slate-400 text-xl">chevron_right</span>
+                                            </div>
+                                            <p className="text-slate-500 dark:text-slate-400 text-xs font-mono mt-1">SN: {d.sn}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium 
+                                                ${d.color === 'blue' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
+                                                    d.color === 'orange' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' :
+                                                        'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'}`}>
+                                                {d.status}
+                                            </span>
+                                            <span className="text-slate-400 text-[10px]">• 2h ago</span>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h2 className="text-slate-900 dark:text-white text-base font-bold leading-tight">{item.title}</h2>
-                                        <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">{item.sub}</p>
+                                </div>
+                                <div className="mt-1 pt-3 border-t border-slate-100 dark:border-slate-700">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Repair Progress</p>
+                                        <p className={`text-xs font-bold ${d.progress === 100 ? 'text-green-600' : d.progress === 50 ? 'text-orange-500' : 'text-primary'}`}>{d.progress}%</p>
+                                    </div>
+                                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+                                        <div className={`h-full rounded-full transition-all duration-500 ${d.progress === 100 ? 'bg-green-500' : d.progress === 50 ? 'bg-orange-500' : 'bg-primary'}`} style={{ width: `${d.progress}%` }}></div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="fixed bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark pt-8">
+                        <button onClick={() => navigate('/register')} className="w-full bg-primary hover:bg-blue-600 text-white rounded-xl py-4 px-6 flex items-center justify-center gap-2 shadow-lg shadow-primary/30 active:scale-[0.98]">
+                            <span className="material-symbols-outlined text-2xl">add_circle</span>
+                            <span className="font-bold text-lg">Register New Repair</span>
+                        </button>
+                    </div>
+                </AppLayout>
+            );
+        };
+
+        // --- Screen 3: Upload Photos ---
+        const UploadPhotosScreen = () => {
+            const navigate = useNavigate();
+            return (
+                <AppLayout>
+                    <div className="sticky top-0 z-50 flex items-center justify-between bg-surface-light/90 dark:bg-background-dark/90 backdrop-blur-md p-4 border-b border-slate-200 dark:border-slate-800">
+                        <button onClick={() => navigate(-1)} className="flex size-10 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-900 dark:text-white">
+                            <span className="material-symbols-outlined">arrow_back_ios_new</span>
+                        </button>
+                        <h2 className="text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Upload Photos</h2>
+                    </div>
+                    <div className="flex flex-col gap-6 p-4 overflow-y-auto">
+                        <div className="relative flex flex-col gap-4 rounded-xl border border-blue-100 bg-blue-50/50 dark:bg-blue-900/20 dark:border-blue-800 p-4">
+                            <button className="absolute top-3 right-3 text-blue-400 dark:text-blue-300"><span className="material-symbols-outlined text-sm">close</span></button>
+                            <div className="flex items-start gap-3">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-primary dark:bg-blue-800">
+                                    <span className="material-symbols-outlined">light_mode</span>
+                                </div>
+                                <div className="flex flex-col gap-1 pr-6">
+                                    <p className="text-base font-bold text-slate-900 dark:text-white">Photo Tips</p>
+                                    <p className="text-sm text-slate-600 dark:text-slate-300">Photograph the damaged area in bright light. Capture multiple angles.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="group cursor-pointer">
+                            <div className="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-primary/30 bg-white dark:bg-surface-dark px-6 py-8 transition-colors group-hover:border-primary">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-1">
+                                    <span className="material-symbols-outlined text-2xl">add_a_photo</span>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-base font-bold text-slate-900 dark:text-white">Add New Photo</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Tap to open camera or gallery</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-between pt-2">
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Uploaded Evidence</h3>
+                            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">2 items</span>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            {[
+                                { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgUuJ7YfiKKvsskF1ZqlR2k8aBRXoMTr69agzOuLQsK47Ey6KNoMThl8JqTBSh1TR41Fe7XE9bAsQxZaL-nWt4tjvkV6ZGdes6aQQHS5dJI76zf9NtO7NVr5R2-g1yVChH1UnvMiq4AH6OXvKE30_Xy6zthF2CMlWsvJRvWjg2ECaoZNBj9StHkNqKGaekA4N_5uON9MNRzfcafCyNUklp62R8ctJGUXaUwo38EsfavUTbL4gPAchnFf-z_KQ2gLaI_Ku2z9OD4Ik', caption: 'Cracked rotor arm front-left', size: '2.4MB' },
+                                { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA4i4WgcHbsRVrK1YbfvTWEFpn-oaks-uZqpDz8T-4diuWEqF6tnPavrGNpB5SP4yIH3QqIi4TwODIQwKb7fOr3WnMCuCkLYXWgcSaf2pMkAMKme26eLx8SkERvXPzme7XLp6-vbhMMcX0Ttt8GctK6oJEqE7GqlbWPOTktW94K28V8A6GnaqBiz6KlWxwVnedXqkdd1wTihGoBujtXUwG_QIdpsGBfr8DO-OWNSSazAyjMmekzdLsoxji_tmneXG8p6TyfhsKf4UY', caption: '', size: '1.2MB' }
+                            ].map((img, i) => (
+                                <div key={i} className="group relative flex flex-col gap-3 rounded-xl bg-white p-3 shadow-sm border border-slate-100 dark:bg-surface-dark dark:border-slate-800">
+                                    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-slate-200">
+                                        <img src={img.img} className="h-full w-full object-cover" />
+                                        <button className="absolute top-2 right-2 size-8 flex items-center justify-center rounded-full bg-black/50 text-white"><span className="material-symbols-outlined text-lg">delete</span></button>
+                                        <div className="absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-1 text-[10px] font-bold text-white">JPEG • {img.size}</div>
+                                    </div>
+                                    <div className="relative">
+                                        <input className="w-full rounded-lg border-slate-200 bg-slate-50 px-3 py-2.5 text-sm dark:bg-slate-900 dark:border-slate-700" type="text" defaultValue={img.caption} placeholder="Describe damage..." />
+                                        <span className="material-symbols-outlined absolute right-3 top-2.5 text-slate-400 text-lg">edit</span>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
-                    <div className="flex-1"></div>
-                </div>
-                {/* Sticky Bottom Actions */}
-                <div className="p-4 bg-background-light dark:bg-background-dark border-t border-slate-200 dark:border-slate-800 sticky bottom-0 z-50">
-                    <div className="flex flex-col gap-3">
-                        <button onClick={() => navigate('/hub')} className="flex items-center justify-center gap-2 w-full rounded-lg bg-primary px-4 py-4 text-white font-bold text-lg shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all active:scale-[0.98]">
-                            <span className="material-symbols-outlined">rocket_launch</span>
-                            Get Started
+                    <div className="sticky bottom-0 left-0 w-full border-t border-slate-200 bg-white/90 p-4 backdrop-blur-md dark:border-slate-800 dark:bg-background-dark/90">
+                        <div className="flex w-full items-center gap-4">
+                            <div className="flex flex-col">
+                                <span className="text-xs text-slate-500">Total Size</span>
+                                <span className="text-sm font-bold">4.8 MB</span>
+                            </div>
+                            <button onClick={() => navigate('/contact')} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-white shadow-lg active:scale-[0.98]">
+                                Save & Continue <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                            </button>
+                        </div>
+                    </div>
+                </AppLayout>
+            );
+        };
+
+        // --- Screen 4: Repair Status ---
+        const RepairStatusScreen = () => {
+            const navigate = useNavigate();
+            return (
+                <AppLayout>
+                    <div className="sticky top-0 z-10 flex items-center bg-white/90 dark:bg-background-dark/90 backdrop-blur-md p-4 pb-2 justify-between border-b border-slate-100 dark:border-slate-800">
+                        <button onClick={() => navigate(-1)} className="text-slate-900 dark:text-white flex size-10 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
+                            <span className="material-symbols-outlined">arrow_back</span>
                         </button>
+                        <h2 className="text-lg font-bold">Repair Status</h2>
+                        <button className="size-10 flex items-center justify-center"><span className="material-symbols-outlined">share</span></button>
                     </div>
-                    <div className="flex justify-center gap-6 mt-4 pb-2">
-                        <a className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-primary transition-colors" href="#">Pricing</a>
-                        <a className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-primary transition-colors" href="#">Contact Support</a>
-                    </div>
-                </div>
-            </Layout>
-        );
-    };
-
-    // --- Screen 7: Hub (Main Dashboard) ---
-    const HubScreen = () => {
-        const navigate = useNavigate();
-
-        return (
-            <Layout showBottomNav={true}>
-                {/* TopAppBar */}
-                <header className="sticky top-0 z-20 flex items-center justify-between bg-background-light/80 dark:bg-background-dark/80 px-5 py-4 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/25">
-                            <span className="material-symbols-outlined text-2xl">flight_takeoff</span>
+                    <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                        <div className="flex flex-col gap-4 rounded-xl bg-white dark:bg-slate-800 p-4 shadow-sm border border-slate-100 dark:border-slate-700">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="flex flex-col gap-1">
+                                    <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary ring-1 ring-inset ring-primary/20 w-fit">In Progress</span>
+                                    <h3 className="text-xl font-bold mt-1">DJI Mavic 3 Cine</h3>
+                                    <p className="text-slate-500 text-sm">ID: #88219</p>
+                                </div>
+                                <div className="h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-center bg-no-repeat bg-cover" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAzbDpRfJ_OWAByMpB7DWBe3iCPt2GqQJtIC1jYrdK5Twzt5orouunPlHQb4zjRb5PA1BVsHEHgv0cP2Jhq-aMF8xCR3adkGa2zxbQGOgyrX0kzjQsdcAIv0Ved91W1SpeMRhF8MwSTtB-Yw4KdvhY8Qu9016XYL0LsLKSW84mdrq0Jj8iRjzFqW9KBMSq0AI7LWsRnPPyTTsD0qRYf1u3wXiCyMofrD9P8Ww6kdkG_XNMyzti-nG6zlbabDhoLUBudYOBIILKa2ko")' }}></div>
+                            </div>
+                            <button className="flex w-full items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-700/50 py-2.5 text-sm font-medium gap-2">
+                                <span className="material-symbols-outlined text-[18px]">info</span> View Drone Specs
+                            </button>
                         </div>
-                        <div>
-                            <h1 className="text-lg font-bold leading-none tracking-tight text-slate-900 dark:text-white">Drone Repair Hub</h1>
-                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">Technician Dashboard</p>
+                        <div className="grid grid-cols-2 gap-3">
+                            {[
+                                { icon: 'event', label: 'Est. Completion', val: 'Oct 24, 2023' },
+                                { icon: 'attach_money', label: 'Est. Cost', val: '$150.00' },
+                                { icon: 'engineering', label: 'Technician', val: 'Alex M.' },
+                                { icon: 'receipt_long', label: 'Invoice', val: 'View PDF' }
+                            ].map((i, idx) => (
+                                <div key={idx} className="rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3 border border-slate-100 dark:border-slate-700">
+                                    <div className="text-slate-400 text-xs font-medium uppercase flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-[16px]">{i.icon}</span> {i.label}
+                                    </div>
+                                    <div className={`text-sm font-bold ${i.label === 'Invoice' ? 'text-primary underline' : ''}`}>{i.val}</div>
+                                </div>
+                            ))}
                         </div>
-                    </div>
-                    <button onClick={() => navigate('/')} className="group flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
-                        <span>Logout</span>
-                        <span className="material-symbols-outlined text-[16px]">logout</span>
-                    </button>
-                </header>
-                <div className="flex-1 w-full pb-24">
-                    {/* HeadlineText */}
-                    <section className="px-5 pt-8 pb-6">
-                        <h2 className="text-[32px] font-bold leading-[1.1] tracking-tight text-slate-900 dark:text-white">
-                            Welcome back, <br/>
-                            <span className="text-primary">Technician</span>
-                        </h2>
-                        <p className="mt-2 text-base text-slate-500 dark:text-slate-400 font-body leading-relaxed">
-                            What would you like to handle today? Select a service module below.
-                        </p>
-                    </section>
-                    {/* TextGrid (Navigation Cards) */}
-                    <nav className="grid grid-cols-2 gap-4 px-5">
-                        <div onClick={() => navigate('/')} className="cursor-pointer group relative flex flex-col justify-between gap-4 rounded-3xl border border-white bg-white p-5 shadow-sm shadow-slate-200/50 transition-all hover:scale-[1.02] hover:shadow-md dark:border-slate-800 dark:bg-surface-dark dark:shadow-none hover:dark:bg-slate-800">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                                <span className="material-symbols-outlined text-2xl">waving_hand</span>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-end">
+                                <h2 className="text-[22px] font-bold">Current Progress</h2>
+                                <span className="text-xs text-slate-500">Step 3 of 5</span>
                             </div>
-                            <div>
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">Welcome Tour</h3>
-                                <p className="mt-1 text-sm font-medium text-slate-400 dark:text-slate-500 font-body">App introduction</p>
-                            </div>
-                        </div>
-                        
-                        <div onClick={() => navigate('/register')} className="cursor-pointer group relative flex flex-col justify-between gap-4 rounded-3xl border border-primary/20 bg-primary/5 p-5 shadow-sm transition-all hover:scale-[1.02] hover:bg-primary/10 hover:shadow-md dark:bg-primary/10 dark:border-primary/30">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/30">
-                                <span className="material-symbols-outlined text-2xl">add</span>
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold text-primary dark:text-blue-400">New Request</h3>
-                                <p className="mt-1 text-sm font-medium text-slate-600 dark:text-slate-400 font-body">Register drone</p>
-                            </div>
-                        </div>
-
-                        <div onClick={() => navigate('/upload')} className="cursor-pointer group relative flex flex-col justify-between gap-4 rounded-3xl border border-white bg-white p-5 shadow-sm shadow-slate-200/50 transition-all hover:scale-[1.02] hover:shadow-md dark:border-slate-800 dark:bg-surface-dark dark:shadow-none hover:dark:bg-slate-800">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400">
-                                <span className="material-symbols-outlined text-2xl">photo_camera</span>
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Upload Media</h3>
-                                <p className="mt-1 text-sm font-medium text-slate-400 dark:text-slate-500 font-body">Add damage photos</p>
+                            <div className="relative pl-10 space-y-8 before:content-[''] before:absolute before:left-4 before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-200 dark:before:bg-slate-700">
+                                {[
+                                    { status: 'complete', title: 'Request Received', date: 'Oct 20, 10:00 AM' },
+                                    { status: 'complete', title: 'Diagnostics Complete', date: 'Oct 21, 02:30 PM' },
+                                    { status: 'current', title: 'Repair in Progress', desc: 'Gimbal motor replacement underway.', note: 'Technician Note: Waiting for specialized adhesive to cure before final assembly.' },
+                                    { status: 'pending', title: 'Testing & Calibration' },
+                                    { status: 'pending', title: 'Ready for Pickup' }
+                                ].map((step, idx) => (
+                                    <div key={idx} className="relative">
+                                        <div className={`absolute -left-10 top-0 size-8 rounded-full flex items-center justify-center z-10 
+                                            ${step.status === 'complete' ? 'bg-primary text-white' :
+                                                step.status === 'current' ? 'bg-primary text-white shadow-lg shadow-primary/30' :
+                                                    'bg-slate-100 dark:bg-slate-700 text-slate-300'}`}>
+                                            <span className="material-symbols-outlined text-[18px]">
+                                                {step.status === 'complete' ? 'check_circle' :
+                                                    idx === 2 ? 'build' :
+                                                        idx === 3 ? 'flight_takeoff' : 'verified'}
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <div className="flex items-center gap-2">
+                                                <p className={`font-bold ${step.status === 'current' ? 'text-primary' : step.status === 'pending' ? 'text-slate-400' : ''}`}>{step.title}</p>
+                                                {step.status === 'current' && <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span></span>}
+                                            </div>
+                                            {step.date && <p className="text-slate-500 text-sm">{step.date}</p>}
+                                            {step.desc && <p className="text-slate-500 text-sm mt-1">{step.desc}</p>}
+                                            {step.note && (
+                                                <div className="mt-3 bg-slate-50 dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700 flex gap-2">
+                                                    <span className="material-symbols-outlined text-primary text-[18px] mt-0.5">info</span>
+                                                    <p className="text-xs text-slate-700 dark:text-slate-300">{step.note}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
-
-                        <div onClick={() => navigate('/client-details')} className="cursor-pointer group relative flex flex-col justify-between gap-4 rounded-3xl border border-white bg-white p-5 shadow-sm shadow-slate-200/50 transition-all hover:scale-[1.02] hover:shadow-md dark:border-slate-800 dark:bg-surface-dark dark:shadow-none hover:dark:bg-slate-800">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400">
-                                <span className="material-symbols-outlined text-2xl">person_book</span>
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Client Profile</h3>
-                                <p className="mt-1 text-sm font-medium text-slate-400 dark:text-slate-500 font-body">Contact details</p>
-                            </div>
-                        </div>
-
-                        <div onClick={() => navigate('/my-drones')} className="cursor-pointer group relative flex flex-col justify-between gap-4 rounded-3xl border border-white bg-white p-5 shadow-sm shadow-slate-200/50 transition-all hover:scale-[1.02] hover:shadow-md dark:border-slate-800 dark:bg-surface-dark dark:shadow-none hover:dark:bg-slate-800">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400">
-                                <span className="material-symbols-outlined text-2xl">toc</span>
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Service History</h3>
-                                <p className="mt-1 text-sm font-medium text-slate-400 dark:text-slate-500 font-body">My drones list</p>
-                            </div>
-                        </div>
-
-                        <div onClick={() => navigate('/track')} className="cursor-pointer group relative flex flex-col justify-between gap-4 rounded-3xl border border-white bg-white p-5 shadow-sm shadow-slate-200/50 transition-all hover:scale-[1.02] hover:shadow-md dark:border-slate-800 dark:bg-surface-dark dark:shadow-none hover:dark:bg-slate-800">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400">
-                                <span className="material-symbols-outlined text-2xl">build_circle</span>
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Track Repair</h3>
-                                <p className="mt-1 text-sm font-medium text-slate-400 dark:text-slate-500 font-body">Check status</p>
-                            </div>
-                        </div>
-                    </nav>
-                </div>
-            </Layout>
-        );
-    };
-
-    // --- Screen 6: Register New Drone ---
-    const RegisterScreen = () => {
-        const navigate = useNavigate();
-        return (
-            <Layout>
-                <div className="sticky top-0 z-50 flex items-center bg-white dark:bg-[#111a22] p-4 pb-2 justify-between border-b border-[#cfd9e7] dark:border-[#2b3b4f]">
-                    <button onClick={() => navigate(-1)} className="text-[#0d131b] dark:text-white flex size-12 shrink-0 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                        <span className="material-symbols-outlined">arrow_back_ios_new</span>
-                    </button>
-                    <h2 className="text-[#0d131b] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">
-                        Register New Repair
-                    </h2>
-                </div>
-                {/* Page Indicators */}
-                <div className="flex w-full flex-row items-center justify-center gap-3 py-6 bg-white dark:bg-[#111a22]">
-                    <div className="h-2 w-8 rounded-full bg-primary"></div>
-                    <div className="h-2 w-2 rounded-full bg-[#cfd9e7] dark:bg-[#2b3b4f]"></div>
-                    <div className="h-2 w-2 rounded-full bg-[#cfd9e7] dark:bg-[#2b3b4f]"></div>
-                </div>
-                {/* Form Content */}
-                <div className="flex-1 flex flex-col px-4 pb-24">
-                     {/* Section: Drone Identity */}
-                    <div className="mb-6">
-                        <h3 className="text-[#0d131b] dark:text-white text-xl font-bold leading-tight tracking-[-0.015em] pb-4">Drone Identity</h3>
-                        <div className="flex flex-col gap-4">
-                            <label className="flex flex-col flex-1">
-                                <p className="text-[#0d131b] dark:text-[#cfd9e7] text-base font-medium leading-normal pb-2">Manufacturer</p>
-                                <input className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#0d131b] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfd9e7] dark:border-[#2b3b4f] bg-slate-50 dark:bg-[#1a2634] h-14 placeholder:text-[#4c6c9a] p-[15px] text-base font-normal leading-normal transition-all" placeholder="e.g. DJI" />
-                            </label>
-                            <label className="flex flex-col flex-1">
-                                <p className="text-[#0d131b] dark:text-[#cfd9e7] text-base font-medium leading-normal pb-2">Model Name</p>
-                                <input className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#0d131b] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfd9e7] dark:border-[#2b3b4f] bg-slate-50 dark:bg-[#1a2634] h-14 placeholder:text-[#4c6c9a] p-[15px] text-base font-normal leading-normal transition-all" placeholder="e.g. Mini 3 Pro" />
-                            </label>
-                            <label className="flex flex-col flex-1">
-                                <p className="text-[#0d131b] dark:text-[#cfd9e7] text-base font-medium leading-normal pb-2">Serial Number</p>
-                                <div className="relative flex items-center">
-                                    <input className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#0d131b] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfd9e7] dark:border-[#2b3b4f] bg-slate-50 dark:bg-[#1a2634] h-14 placeholder:text-[#4c6c9a] p-[15px] pr-12 text-base font-normal leading-normal transition-all" placeholder="S/N located on battery compartment" />
-                                    <button className="absolute right-3 text-[#4c6c9a] hover:text-primary transition-colors p-1">
-                                        <span className="material-symbols-outlined">qr_code_scanner</span>
+                        <div className="pt-4 pb-8">
+                            <h3 className="text-lg font-bold mb-3">Admin</h3>
+                            <div className="flex flex-col gap-3">
+                                <button onClick={() => navigate('/add-parts')} className="w-full bg-slate-100 dark:bg-slate-800 border border-dashed border-slate-300 dark:border-slate-600 py-3 rounded-xl flex items-center justify-center gap-2 font-bold">
+                                    <span className="material-symbols-outlined">add</span> Add Drone Parts
+                                </button>
+                                <div className="flex gap-3">
+                                    <button className="flex-1 bg-primary text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg">
+                                        <span className="material-symbols-outlined">chat</span> Message Shop
                                     </button>
+                                    <button className="px-4 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-center"><span className="material-symbols-outlined">call</span></button>
                                 </div>
-                            </label>
-                        </div>
-                    </div>
-                     <div className="h-px bg-[#cfd9e7] dark:bg-[#2b3b4f] w-full my-4"></div>
-                     <div className="mb-6">
-                        <h3 className="text-[#0d131b] dark:text-white text-xl font-bold leading-tight tracking-[-0.015em] pb-4">The Issue</h3>
-                        <label className="flex flex-col flex-1">
-                            <p className="text-[#0d131b] dark:text-[#cfd9e7] text-base font-medium leading-normal pb-2">Description</p>
-                            <textarea className="form-textarea flex w-full min-w-0 flex-1 resize-none rounded-xl text-[#0d131b] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfd9e7] dark:border-[#2b3b4f] bg-slate-50 dark:bg-[#1a2634] h-32 placeholder:text-[#4c6c9a] p-[15px] text-base font-normal leading-normal transition-all" placeholder="Describe the crash or malfunction in detail..."></textarea>
-                        </label>
-                    </div>
-                    {/* Visual Evidence Section */}
-                     <div className="mb-2">
-                        <div className="flex justify-between items-center pb-4">
-                            <h3 className="text-[#0d131b] dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]">Visual Evidence</h3>
-                            <span className="text-sm text-primary font-medium">Optional</span>
-                        </div>
-                        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-                            <button onClick={()=>navigate('/upload')} className="flex flex-col items-center justify-center shrink-0 w-24 h-24 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10 transition-colors">
-                                <span className="material-symbols-outlined text-primary mb-1">add_a_photo</span>
-                                <span className="text-xs font-medium text-primary">Add Photo</span>
-                            </button>
-                            <div className="relative shrink-0 w-24 h-24 rounded-xl overflow-hidden group">
-                                <img alt="Drone damage preview" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQpnSB9-M94lkz3blNHA8lE2SxoGOe-bNmMn2cJiIzn2DN-3F3O__6iRd_YfQ-0FFuNmOT6pPZIACR3zKNG0OABdQJU19UZfGWAk-H38jdcipACBwQk9uqu7Z4fxJrVuHSzVyIv7O1OJ3MLP8Koin0dHyEGLX72TNCThTUQzu7oaFWL97WNH2rpaQ09u8R-uR-4BVgnbm3f1_vHDEvjzSRtn2r7FPhROmXLzFldcnHRVW3YBCABrbbFA9kiCHhotWZtq68Kb_WTU4"/>
-                                <button className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <span className="material-symbols-outlined text-[16px]">close</span>
-                                </button>
                             </div>
                         </div>
                     </div>
-                </div>
-                {/* Footer CTA */}
-                <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 bg-white/90 dark:bg-[#111a22]/90 backdrop-blur-md border-t border-[#cfd9e7] dark:border-[#2b3b4f]">
-                    <button onClick={() => navigate('/client-details')} className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-5 flex-1 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] w-full shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all active:scale-[0.98]">
-                        <span className="truncate">Next: Client Details</span>
-                    </button>
-                </div>
-            </Layout>
-        );
-    }
+                </AppLayout>
+            );
+        };
 
-    // --- Screen 5: Client Details Form ---
-    const ClientDetailsScreen = () => {
-        const navigate = useNavigate();
-        return (
-            <Layout>
-                <header className="sticky top-0 z-50 flex items-center justify-between bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm p-4 pb-2 transition-colors duration-300">
-                    <button onClick={() => navigate(-1)} className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-text-main-light dark:text-text-main-dark">
-                        <span className="material-symbols-outlined text-[24px]">arrow_back_ios_new</span>
-                    </button>
-                    <h2 className="text-text-main-light dark:text-text-main-dark text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Contact Info</h2>
-                </header>
-                
-                <div className="flex w-full flex-col items-center justify-center pt-2 pb-6 px-4">
-                    <div className="flex w-full items-center justify-between px-8 mb-2">
-                        <span className="text-xs font-medium text-text-sub-light dark:text-text-sub-dark">Step 2 of 4</span>
-                        <span className="text-xs font-medium text-primary">50%</span>
-                    </div>
-                    <div className="flex w-full flex-row items-center justify-center gap-2">
-                        <div className="h-1.5 w-full rounded-full bg-primary/30"></div>
-                        <div className="h-1.5 w-full rounded-full bg-primary shadow-[0_0_10px_rgba(19,109,236,0.5)]"></div>
-                        <div className="h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-700"></div>
-                        <div className="h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-700"></div>
-                    </div>
-                </div>
-
-                <main className="flex-1 flex flex-col px-5 pb-24">
-                     <div className="mb-2">
-                        <h3 className="text-text-main-light dark:text-text-main-dark tracking-tight text-3xl font-bold leading-tight text-left">
-                            Who is this <br/>
-                            <span className="text-primary">repair for?</span>
-                        </h3>
-                    </div>
-                    <div className="mb-8">
-                        <p className="text-text-sub-light dark:text-text-sub-dark text-base font-normal leading-relaxed">
-                            We need your contact details to send you status updates regarding your drone and the final invoice.
-                        </p>
-                    </div>
-
-                    <form className="flex flex-col gap-6" onSubmit={(e) => e.preventDefault()}>
-                        <div className="group">
-                            <label className="block mb-2 text-sm font-medium text-text-main-light dark:text-text-main-dark" htmlFor="fullName">Full Name</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-text-sub-light dark:text-text-sub-dark group-focus-within:text-primary transition-colors">
-                                    <span className="material-symbols-outlined">person</span>
-                                </div>
-                                <input autoComplete="name" className="form-input block w-full pl-12 pr-4 py-4 rounded-xl border-none bg-input-bg-light dark:bg-input-bg-dark text-text-main-light dark:text-text-main-dark placeholder:text-text-sub-light/60 dark:placeholder:text-text-sub-dark/50 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-surface-dark transition-all duration-200 text-base shadow-sm" id="fullName" placeholder="John Doe" type="text" defaultValue="Alex Morgan"/>
-                                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-green-500 opacity-100 transition-opacity">
-                                    <span className="material-symbols-outlined text-[20px]">check_circle</span>
-                                </div>
-                            </div>
-                        </div>
-                         <div className="group">
-                            <label className="block mb-2 text-sm font-medium text-text-main-light dark:text-text-main-dark" htmlFor="phone">Mobile Number</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-text-sub-light dark:text-text-sub-dark group-focus-within:text-primary transition-colors">
-                                    <span className="material-symbols-outlined">call</span>
-                                </div>
-                                <input autoComplete="tel" className="form-input block w-full pl-12 pr-4 py-4 rounded-xl border-none bg-input-bg-light dark:bg-input-bg-dark text-text-main-light dark:text-text-main-dark placeholder:text-text-sub-light/60 dark:placeholder:text-text-sub-dark/50 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-surface-dark transition-all duration-200 text-base shadow-sm" id="phone" placeholder="+1 (555) 000-0000" type="tel"/>
-                            </div>
-                        </div>
-                        <div className="group">
-                            <label className="block mb-2 text-sm font-medium text-text-main-light dark:text-text-main-dark" htmlFor="email">Email Address</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-text-sub-light dark:text-text-sub-dark group-focus-within:text-primary transition-colors">
-                                    <span className="material-symbols-outlined">mail</span>
-                                </div>
-                                <input autoComplete="email" className="form-input block w-full pl-12 pr-4 py-4 rounded-xl border-none bg-input-bg-light dark:bg-input-bg-dark text-text-main-light dark:text-text-main-dark placeholder:text-text-sub-light/60 dark:placeholder:text-text-sub-dark/50 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-surface-dark transition-all duration-200 text-base shadow-sm" id="email" placeholder="john@example.com" type="email"/>
-                            </div>
-                        </div>
-                         <div className="mt-2 flex items-center justify-between p-4 bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm">
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center justify-center size-8 rounded-full bg-primary/10 text-primary">
-                                    <span className="material-symbols-outlined text-[18px]">notifications_active</span>
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-text-main-light dark:text-text-main-dark">SMS Updates</span>
-                                    <span className="text-xs text-text-sub-light dark:text-text-sub-dark">Get instant repair alerts</span>
-                                </div>
-                            </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input defaultChecked className="sr-only peer" type="checkbox" value=""/>
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                            </label>
-                        </div>
-                    </form>
-                </main>
-                 <div className="fixed bottom-0 left-0 right-0 z-50 p-5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md flex justify-center w-full max-w-md mx-auto">
-                    <div className="w-full flex flex-col gap-3">
-                        <button onClick={() => navigate('/hub')} className="w-full bg-primary hover:bg-blue-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group">
-                            Save & Continue
-                            <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        // --- Screen 5: Contact Info ---
+        const ContactScreen = () => {
+            const navigate = useNavigate();
+            return (
+                <AppLayout>
+                    <header className="sticky top-0 z-50 flex items-center justify-between bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm p-4">
+                        <button onClick={() => navigate(-1)} className="size-10 flex items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-800">
+                            <span className="material-symbols-outlined text-[24px]">arrow_back_ios_new</span>
                         </button>
-                        <div className="flex items-center justify-center gap-1.5 text-center">
-                            <span className="material-symbols-outlined text-[14px] text-text-sub-light/70 dark:text-text-sub-dark/70">lock</span>
-                            <p className="text-[11px] text-text-sub-light/70 dark:text-text-sub-dark/70">
-                                We promise not to spam you. Only repair updates.
-                            </p>
+                        <h2 className="text-lg font-bold flex-1 text-center pr-10">Contact Info</h2>
+                    </header>
+                    <div className="flex w-full flex-col items-center pt-2 pb-6 px-4">
+                        <div className="flex w-full justify-between px-8 mb-2">
+                            <span className="text-xs font-medium text-slate-500">Step 2 of 4</span>
+                            <span className="text-xs font-medium text-primary">50%</span>
+                        </div>
+                        <div className="flex w-full gap-2 px-8">
+                            {[1, 1, 0, 0].map((v, i) => <div key={i} className={`h-1.5 flex-1 rounded-full ${v ? 'bg-primary shadow-[0_0_10px_rgba(19,109,236,0.5)]' : 'bg-gray-200 dark:bg-gray-700'}`}></div>)}
                         </div>
                     </div>
-                </div>
-            </Layout>
-        );
-    }
-
-    // --- Screen 3: Upload Photos ---
-    const UploadScreen = () => {
-        const navigate = useNavigate();
-        return (
-            <Layout>
-                <div className="sticky top-0 z-50 flex items-center justify-between bg-surface-light/90 dark:bg-background-dark/90 backdrop-blur-md p-4 border-b border-slate-200 dark:border-slate-800">
-                    <button onClick={() => navigate(-1)} className="flex size-10 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-900 dark:text-white">
-                        <span className="material-symbols-outlined">arrow_back_ios_new</span>
-                    </button>
-                    <h2 className="text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Upload Photos</h2>
-                </div>
-
-                <div className="flex flex-col gap-6 p-4 w-full">
-                    {/* Photo Tips */}
-                    <div className="@container">
-                        <div className="relative flex flex-col gap-4 rounded-xl border border-blue-100 bg-blue-50/50 dark:bg-blue-900/20 dark:border-blue-800 p-4">
-                            <button className="absolute top-3 right-3 text-blue-400 hover:text-blue-600 dark:text-blue-300 dark:hover:text-blue-100">
-                                <span className="material-symbols-outlined text-sm">close</span>
-                            </button>
-                            <div className="flex items-start gap-3">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-primary dark:bg-blue-800 dark:text-blue-200">
-                                    <span className="material-symbols-outlined">light_mode</span>
-                                </div>
-                                <div className="flex flex-col gap-1 pr-6">
-                                    <p className="text-base font-bold leading-tight text-slate-900 dark:text-white">Photo Tips</p>
-                                    <p className="text-sm font-normal leading-relaxed text-slate-600 dark:text-slate-300">
-                                        Photograph the damaged area in bright light. Try to capture multiple angles of broken rotors or frame cracks.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Upload Action */}
-                    <div className="group cursor-pointer">
-                        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-primary/30 bg-white dark:bg-surface-dark px-6 py-8 transition-colors group-hover:border-primary group-hover:bg-blue-50/30 dark:group-hover:bg-surface-dark/80">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-1">
-                                <span className="material-symbols-outlined text-2xl">add_a_photo</span>
-                            </div>
-                            <div className="text-center">
-                                <p className="text-base font-bold text-slate-900 dark:text-white">Add New Photo</p>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Tap to open camera or gallery</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    {/* Uploaded Grid */}
-                    <div className="flex items-center justify-between pt-2">
-                        <h3 className="text-xl font-bold leading-tight tracking-tight text-slate-900 dark:text-white">Uploaded Evidence</h3>
-                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">2 items</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        {/* Card 1 */}
-                        <div className="group relative flex flex-col gap-3 rounded-xl bg-white p-3 shadow-sm border border-slate-100 dark:bg-surface-dark dark:border-slate-800">
-                            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-slate-200">
-                                <img alt="Close up of a damaged drone rotor arm" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgUuJ7YfiKKvsskF1ZqlR2k8aBRXoMTr69agzOuLQsK47Ey6KNoMThl8JqTBSh1TR41Fe7XE9bAsQxZaL-nWt4tjvkV6ZGdes6aQQHS5dJI76zf9NtO7NVr5R2-g1yVChH1UnvMiq4AH6OXvKE30_Xy6zthF2CMlWsvJRvWjg2ECaoZNBj9StHkNqKGaekA4N_5uON9MNRzfcafCyNUklp62R8ctJGUXaUwo38EsfavUTbL4gPAchnFf-z_KQ2gLaI_Ku2z9OD4Ik"/>
-                                <button className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-red-500 transition-colors">
-                                    <span className="material-symbols-outlined text-lg">delete</span>
-                                </button>
-                                <div className="absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-md">JPEG • 2.4MB</div>
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Caption</label>
-                                <div className="relative">
-                                    <input className="w-full rounded-lg border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-900 placeholder-slate-400 focus:border-primary focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-900 dark:text-white" type="text" defaultValue="Cracked rotor arm front-left"/>
-                                    <span className="material-symbols-outlined absolute right-3 top-2.5 text-slate-400 text-lg">edit</span>
-                                </div>
-                            </div>
-                        </div>
-                         {/* Card 2 */}
-                        <div className="group relative flex flex-col gap-3 rounded-xl bg-white p-3 shadow-sm border border-slate-100 dark:bg-surface-dark dark:border-slate-800">
-                            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-slate-200">
-                                <img alt="Top down view of a drone with bent propeller" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4i4WgcHbsRVrK1YbfvTWEFpn-oaks-uZqpDz8T-4diuWEqF6tnPavrGNpB5SP4yIH3QqIi4TwODIQwKb7fOr3WnMCuCkLYXWgcSaf2pMkAMKme26eLx8SkERvXPzme7XLp6-vbhMMcX0Ttt8GctK6oJEqE7GqlbWPOTktW94K28V8A6GnaqBiz6KlWxwVnedXqkdd1wTihGoBujtXUwG_QIdpsGBfr8DO-OWNSSazAyjMmekzdLsoxji_tmneXG8p6TyfhsKf4UY"/>
-                                <button className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-red-500 transition-colors">
-                                    <span className="material-symbols-outlined text-lg">delete</span>
-                                </button>
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Caption</label>
-                                <div className="relative">
-                                    <input className="w-full rounded-lg border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-900 placeholder-slate-400 focus:border-primary focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-900 dark:text-white" placeholder="Describe damage..." type="text"/>
-                                    <span className="material-symbols-outlined absolute right-3 top-2.5 text-slate-400 text-lg">edit</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="fixed bottom-0 left-0 z-40 w-full border-t border-slate-200 bg-white/90 p-4 backdrop-blur-md dark:border-slate-800 dark:bg-background-dark/90 max-w-md mx-auto">
-                    <div className="mx-auto flex w-full max-w-lg items-center gap-4">
-                        <div className="flex flex-col">
-                            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Size</span>
-                            <span className="text-sm font-bold text-slate-900 dark:text-white">4.8 MB</span>
-                        </div>
-                        <button onClick={() => navigate(-1)} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-blue-600 active:scale-[0.98]">
-                            <span>Save & Continue</span>
-                            <span className="material-symbols-outlined text-lg">arrow_forward</span>
-                        </button>
-                    </div>
-                </div>
-            </Layout>
-        );
-    }
-
-    // --- Screen 2: My Drones ---
-    const MyDronesScreen = () => {
-        const navigate = useNavigate();
-        return (
-            <Layout showBottomNav={true}>
-                {/* Header */}
-                <header className="flex flex-col gap-2 px-5 pt-8 pb-4">
-                    <div className="flex items-center justify-between h-12">
-                        <div className="flex flex-col">
-                            <span className="text-slate-500 dark:text-slate-400 text-sm font-medium">Welcome back, Alex</span>
-                            <h1 className="text-slate-900 dark:text-white text-3xl font-bold leading-tight tracking-tight">My Drones</h1>
-                        </div>
-                        <button className="relative shrink-0 overflow-hidden rounded-full ring-2 ring-white dark:ring-slate-700 shadow-md size-12">
-                            <img alt="User Profile" className="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwNlUvFFbyyfq0HeUNORs-hOYm5zynu6jSp-tmUVwDQctCQ0X66guhiKPLbOSUMiN051Mpp0KsLNyEnWJMs0HrlmROt5U-bO-9PyAbDClTXi6X_i2OxljdEnbPDm1fN83tglL_txdlHkTEW0ppfmpGN7LYmhHuV1zcuCAs3YbyHlpH_kppVRzDS3OqOJRDWYFKHjYaky5Wi_Kc1stJYopi-8rWgc6keWYXMILhjge9pKlKoXnBxF0fVyJ0kh8zTwKJFt1kkwe1B6Q"/>
-                        </button>
-                    </div>
-                </header>
-                {/* Filters */}
-                <div className="px-5 py-2">
-                    <div className="flex h-12 w-full items-center justify-center rounded-xl bg-slate-200 dark:bg-slate-800 p-1">
-                        <label className="group flex cursor-pointer h-full flex-1 items-center justify-center overflow-hidden rounded-lg px-2 transition-all bg-white dark:bg-slate-700 shadow-sm text-primary">
-                            <span className="truncate text-sm font-bold">Active Repairs</span>
-                            <input defaultChecked className="invisible w-0 absolute" name="repair-filter" type="radio" value="Active Repairs"/>
-                        </label>
-                        <label className="group flex cursor-pointer h-full flex-1 items-center justify-center overflow-hidden rounded-lg px-2 transition-all text-slate-500 dark:text-slate-400">
-                            <span className="truncate text-sm font-bold">All Drones</span>
-                            <input className="invisible w-0 absolute" name="repair-filter" type="radio" value="All Drones"/>
-                        </label>
-                    </div>
-                </div>
-                
-                <div className="h-4"></div>
-                {/* List */}
-                <div className="flex flex-col gap-4 px-5">
-                    {/* Item 1 */}
-                     <div onClick={() => navigate('/track')} className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-4 shadow-sm border border-slate-100 dark:border-slate-700 active:scale-[0.98] transition-transform duration-200 cursor-pointer">
-                        <div className="flex gap-4">
-                            <div className="shrink-0">
-                                <div className="bg-center bg-no-repeat bg-cover rounded-xl size-[80px] bg-slate-100 dark:bg-slate-700" style={{backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCfuaQsbP2m3Fq6OjlcfPMRCBTq-xqVtwsqM9L90UQVkyqNzmPZscdsKShZT5ODh2mW0-4WLPhxOn_DpmfwXmUCPdQLIOLWZAn2WAg-Q3oAw5wwPjmW27FkbPfgMEdP-k4lY8Tkssi_ih6RTWCssuPAlHi5MmLfauf192nzvZR8ge5VGpgWmrYDdU0YBtWE1scA7a8fVenIGl7sI5ESKTrFW1Wh4MP_6b_URKgKvrhPu7sUxCx9Yn6ND1cZaZnVDUvAXTBU5zAYSXk")'}}></div>
-                            </div>
-                            <div className="flex flex-1 flex-col justify-between py-0.5">
-                                <div>
-                                    <div className="flex justify-between items-start">
-                                        <h3 className="text-slate-900 dark:text-white text-lg font-bold leading-tight">DJI Mavic 3</h3>
-                                        <span className="material-symbols-outlined text-slate-400 text-xl">chevron_right</span>
+                    <main className="flex-1 px-5 pb-24">
+                        <h3 className="text-3xl font-bold leading-tight mb-2">Who is this <br /><span className="text-primary">repair for?</span></h3>
+                        <p className="text-slate-500 mb-8">We need your contact details to send you status updates and the final invoice.</p>
+                        <form className="space-y-6" onSubmit={e => { e.preventDefault(); navigate('/my-drones'); }}>
+                            {[
+                                { label: 'Full Name', icon: 'person', placeholder: 'John Doe', val: 'Alex Morgan' },
+                                { label: 'Mobile Number', icon: 'call', placeholder: '+1 (555) 000-0000', val: '' },
+                                { label: 'Email Address', icon: 'mail', placeholder: 'john@example.com', val: '' }
+                            ].map((f, i) => (
+                                <div key={i} className="group">
+                                    <label className="block mb-2 text-sm font-medium">{f.label}</label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 group-focus-within:text-primary"><span className="material-symbols-outlined">{f.icon}</span></div>
+                                        <input className="w-full pl-12 py-4 rounded-xl border-none bg-input-bg-light dark:bg-input-bg-dark focus:ring-2 focus:ring-primary" placeholder={f.placeholder} defaultValue={f.val} type="text" />
+                                        {f.val && <div className="absolute inset-y-0 right-0 pr-4 flex items-center text-green-500"><span className="material-symbols-outlined">check_circle</span></div>}
                                     </div>
-                                    <p className="text-slate-500 dark:text-slate-400 text-xs font-mono mt-1">SN: 159357284</p>
                                 </div>
-                                <div className="flex items-center gap-2 mt-2">
-                                    <span className="inline-flex items-center rounded-full bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300">In Diagnostics</span>
-                                    <span className="text-slate-400 text-[10px]">• 2h ago</span>
+                            ))}
+                            <div className="flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                                <div className="flex items-center gap-3">
+                                    <div className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center"><span className="material-symbols-outlined text-[18px]">notifications_active</span></div>
+                                    <div className="flex flex-col"><span className="text-sm font-bold">SMS Updates</span><span className="text-xs text-slate-500">Get instant repair alerts</span></div>
                                 </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input defaultChecked className="sr-only peer" type="checkbox" />
+                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
                             </div>
-                        </div>
-                        <div className="mt-1 pt-3 border-t border-slate-100 dark:border-slate-700">
-                            <div className="flex items-center justify-between mb-2">
-                                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Repair Progress</p>
-                                <p className="text-xs font-bold text-primary">25%</p>
-                            </div>
-                            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
-                                <div className="h-full rounded-full bg-primary transition-all duration-500" style={{width: '25%'}}></div>
+                        </form>
+                    </main>
+                    <div className="fixed bottom-0 left-0 right-0 p-5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+                        <div className="max-w-md mx-auto w-full flex flex-col gap-3">
+                            <button onClick={() => navigate('/my-drones')} className="w-full bg-primary text-white font-bold text-lg py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 group active:scale-[0.98]">
+                                Save & Continue <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            </button>
+                            <div className="flex items-center justify-center gap-1.5 text-center text-slate-500 opacity-70">
+                                <span className="material-symbols-outlined text-[14px]">lock</span>
+                                <p className="text-[11px]">We promise not to spam you. Only repair updates.</p>
                             </div>
                         </div>
                     </div>
-                     {/* Item 2 */}
-                    <div className="group relative flex flex-col gap-3 rounded-2xl bg-surface-light dark:bg-surface-dark p-4 shadow-sm border border-slate-100 dark:border-slate-700 active:scale-[0.98] transition-transform duration-200 cursor-pointer">
-                        <div className="flex gap-4">
-                            <div className="shrink-0">
-                                <div className="bg-center bg-no-repeat bg-cover rounded-xl size-[80px] bg-slate-100 dark:bg-slate-700" style={{backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCExA2DWR_X7sfJGpQUplveez75X-a7Dd7kOkjQuFqWixRRCkMKLD2pLJnfsFf8-W1isXL04wcCrvqvDQxBHfrEInx1fH93fb7MVZgeQJXgspHANwWgMMHRPbHVr-HJb__D7aMznz-iaMkYTol4FAssDzDol165ymBq3dWEZc3YZKa-d83BmetFFXa_pzvxXBjaXi1XbjwQbkDTVzXZ0iieVgY-ie6tIlDqZyrqh1wZeyyzCrdMaX6i6AyXp1l3B125xzvJkWTU_LE")'}}></div>
-                            </div>
-                            <div className="flex flex-1 flex-col justify-between py-0.5">
-                                <div>
-                                    <div className="flex justify-between items-start">
-                                        <h3 className="text-slate-900 dark:text-white text-lg font-bold leading-tight">DJI Mini 2</h3>
-                                        <span className="material-symbols-outlined text-slate-400 text-xl">chevron_right</span>
+                </AppLayout>
+            );
+        };
+
+        // --- Screen 6: Register New Repair ---
+        const RegisterScreen = () => {
+            const navigate = useNavigate();
+            return (
+                <AppLayout>
+                    <div className="sticky top-0 z-50 flex items-center bg-white dark:bg-[#111a22] p-4 border-b border-[#cfd9e7] dark:border-[#2b3b4f]">
+                        <button onClick={() => navigate(-1)} className="size-12 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
+                            <span className="material-symbols-outlined">arrow_back_ios_new</span>
+                        </button>
+                        <h2 className="text-lg font-bold flex-1 text-center pr-12">Register New Repair</h2>
+                    </div>
+                    <div className="flex justify-center gap-3 py-6 bg-white dark:bg-[#111a22]">
+                        <div className="h-2 w-8 rounded-full bg-primary"></div>
+                        <div className="h-2 w-2 rounded-full bg-[#cfd9e7] dark:bg-[#2b3b4f]"></div>
+                        <div className="h-2 w-2 rounded-full bg-[#cfd9e7] dark:bg-[#2b3b4f]"></div>
+                    </div>
+                    <div className="flex-1 px-4 pb-28 space-y-8 overflow-y-auto">
+                        <section>
+                            <h3 className="text-xl font-bold mb-4">Drone Identity</h3>
+                            <div className="space-y-4">
+                                <label className="block space-y-2">
+                                    <span className="text-base font-medium">Manufacturer</span>
+                                    <input className="w-full h-14 rounded-xl border-[#cfd9e7] dark:bg-[#1a2634] dark:border-[#2b3b4f]" placeholder="e.g. DJI" />
+                                </label>
+                                <label className="block space-y-2">
+                                    <span className="text-base font-medium">Model Name</span>
+                                    <input className="w-full h-14 rounded-xl border-[#cfd9e7] dark:bg-[#1a2634] dark:border-[#2b3b4f]" placeholder="e.g. Mini 3 Pro" />
+                                </label>
+                                <label className="block space-y-2">
+                                    <span className="text-base font-medium">Serial Number</span>
+                                    <div className="relative flex items-center">
+                                        <input className="w-full h-14 pr-12 rounded-xl border-[#cfd9e7] dark:bg-[#1a2634] dark:border-[#2b3b4f]" placeholder="S/N on battery compartment" />
+                                        <button className="absolute right-3 text-slate-400"><span className="material-symbols-outlined">qr_code_scanner</span></button>
                                     </div>
-                                    <p className="text-slate-500 dark:text-slate-400 text-xs font-mono mt-1">SN: 847291038</p>
+                                </label>
+                            </div>
+                        </section>
+                        <section>
+                            <h3 className="text-xl font-bold mb-4">The Issue</h3>
+                            <textarea className="w-full h-32 rounded-xl border-[#cfd9e7] dark:bg-[#1a2634] dark:border-[#2b3b4f]" placeholder="Describe the crash or malfunction..."></textarea>
+                        </section>
+                        <section>
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-xl font-bold">Visual Evidence</h3>
+                                <span className="text-sm text-primary">Optional</span>
+                            </div>
+                            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                                <button onClick={() => navigate('/upload-photos')} className="flex flex-col items-center justify-center shrink-0 w-24 h-24 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5">
+                                    <span className="material-symbols-outlined text-primary mb-1">add_a_photo</span>
+                                    <span className="text-xs font-medium text-primary">Add Photo</span>
+                                </button>
+                                <div className="relative shrink-0 size-24 rounded-xl overflow-hidden group">
+                                    <img className="size-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQpnSB9-M94lkz3blNHA8lE2SxoGOe-bNmMn2cJiIzn2DN-3F3O__6iRd_YfQ-0FFuNmOT6pPZIACR3zKNG0OABdQJU19UZfGWAk-H38jdcipACBwQk9uqu7Z4fxJrVuHSzVyIv7O1OJ3MLP8Koin0dHyEGLX72TNCThTUQzu7oaFWL97WNH2rpaQ09u8R-uR-4BVgnbm3f1_vHDEvjzSRtn2r7FPhROmXLzFldcnHRVW3YBCABrbbFA9kiCHhotWZtq68Kb_WTU4" />
+                                    <button className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"><span className="material-symbols-outlined text-[16px]">close</span></button>
                                 </div>
-                                <div className="flex items-center gap-2 mt-2">
-                                    <span className="inline-flex items-center rounded-full bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 text-xs font-medium text-orange-700 dark:text-orange-300">Waiting for Parts</span>
-                                    <span className="text-slate-400 text-[10px]">• 1d ago</span>
+                            </div>
+                        </section>
+                        <div className="border-t border-[#cfd9e7] dark:border-[#2b3b4f] pt-4">
+                            <details className="group">
+                                <summary className="flex justify-between items-center cursor-pointer list-none"><span className="text-lg font-bold">Authorization</span><span className="material-symbols-outlined group-open:rotate-180 transition-transform">expand_more</span></summary>
+                                <div className="py-4 space-y-6">
+                                    <label className="flex items-start gap-3 cursor-pointer">
+                                        <input type="checkbox" className="mt-1 rounded border-slate-300 text-primary focus:ring-primary" />
+                                        <p className="text-sm">I agree to the Terms of Service. I authorize diagnosis and repair.</p>
+                                    </label>
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between items-center"><span className="font-medium">Signature</span><button className="text-xs text-primary font-bold">CLEAR</button></div>
+                                        <div className="h-32 rounded-xl bg-slate-50 dark:bg-[#1a2634] border-2 border-dashed border-[#cfd9e7] dark:border-[#2b3b4f] flex items-center justify-center">
+                                            <span className="text-slate-400 text-sm">Sign within the box</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                    <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 bg-white/90 dark:bg-[#111a22]/90 border-t backdrop-blur-md">
+                        <button onClick={() => navigate('/upload-photos')} className="w-full h-12 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/30 active:scale-[0.98]">
+                            Submit Registration
+                        </button>
+                    </div>
+                </AppLayout>
+            );
+        };
+
+        // --- Screen 7: Add Parts ---
+        const AddPartsScreen = () => {
+            const navigate = useNavigate();
+            return (
+                <AppLayout>
+                    <div className="sticky top-0 z-20 flex items-center bg-white/90 dark:bg-background-dark/90 backdrop-blur-md p-4 justify-between border-b border-slate-100 dark:border-slate-800">
+                        <button onClick={() => navigate(-1)} className="size-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"><span className="material-symbols-outlined">arrow_back</span></button>
+                        <h2 className="text-lg font-bold">Add Drone Parts</h2>
+                        <div className="size-10"></div>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-4 space-y-5">
+                        <div className="flex items-center gap-3 px-1">
+                            <div className="size-10 bg-primary/10 text-primary flex items-center justify-center rounded-lg"><span className="material-symbols-outlined">build_circle</span></div>
+                            <div>
+                                <p className="text-xs text-slate-500 uppercase font-medium">Repairing</p>
+                                <h3 className="text-sm font-bold">DJI Mavic 3 Cine <span className="font-normal text-slate-500">#88219</span></h3>
+                            </div>
+                        </div>
+                        <div className="p-5 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm space-y-5">
+                            <div className="flex justify-between items-center border-b pb-3">
+                                <div className="flex items-center gap-2">
+                                    <span className="size-6 rounded-full bg-slate-100 dark:bg-slate-700 text-xs font-bold flex items-center justify-center">1</span>
+                                    <h3 className="font-bold">Component Details</h3>
+                                </div>
+                                <button className="text-slate-400 hover:text-red-500 transition-colors"><span className="material-symbols-outlined text-[20px]">delete</span></button>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-slate-500 uppercase">Category</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {['Module', 'Part'].map((t, i) => (
+                                        <label key={i} className="relative cursor-pointer">
+                                            <input type="radio" name="cat" className="sr-only peer" defaultChecked={i === 1} />
+                                            <div className="flex items-center justify-center gap-2 p-3 rounded-lg border bg-slate-50 dark:bg-slate-900/50 peer-checked:border-primary peer-checked:bg-white dark:peer-checked:bg-slate-800 transition-all">
+                                                <span className="material-symbols-outlined text-slate-400 peer-checked:text-primary transition-colors">{i === 0 ? 'extension' : 'settings'}</span>
+                                                <span className="text-sm font-bold">{t}</span>
+                                            </div>
+                                        </label>
+                                    ))}
                                 </div>
                             </div>
-                        </div>
-                         <div className="mt-1 pt-3 border-t border-slate-100 dark:border-slate-700">
-                            <div className="flex items-center justify-between mb-2">
-                                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Repair Progress</p>
-                                <p className="text-xs font-bold text-orange-500">50%</p>
-                            </div>
-                            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
-                                <div className="h-full rounded-full bg-orange-500 transition-all duration-500" style={{width: '50%'}}></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="fixed bottom-20 left-0 right-0 p-5 bg-gradient-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark pt-8 pointer-events-none max-w-md mx-auto">
-                    <button onClick={() => navigate('/register')} className="pointer-events-auto w-full bg-primary hover:bg-blue-600 text-white rounded-xl py-4 px-6 flex items-center justify-center gap-2 shadow-lg shadow-primary/30 transition-all active:scale-[0.98]">
-                        <span className="material-symbols-outlined text-2xl">add_circle</span>
-                        <span className="font-bold text-lg">Register New Repair</span>
-                    </button>
-                </div>
-            </Layout>
-        );
-    }
-
-    // --- Screen 4: Repair Status Detail ---
-    const RepairStatusScreen = () => {
-        const navigate = useNavigate();
-        return (
-            <Layout>
-                <div className="sticky top-0 z-10 flex items-center bg-white/90 dark:bg-background-dark/90 backdrop-blur-md p-4 pb-2 justify-between border-b border-slate-100 dark:border-slate-800">
-                    <button onClick={() => navigate(-1)} className="text-slate-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                        <span className="material-symbols-outlined">arrow_back</span>
-                    </button>
-                    <h2 className="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Repair Status</h2>
-                    <button className="flex size-10 shrink-0 items-center justify-center rounded-full text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                        <span className="material-symbols-outlined">share</span>
-                    </button>
-                </div>
-                {/* Drone Card */}
-                 <div className="p-4">
-                    <div className="flex flex-col gap-4 rounded-xl bg-white dark:bg-slate-800 p-4 shadow-sm border border-slate-100 dark:border-slate-700">
-                        <div className="flex items-start justify-between gap-4">
-                            <div className="flex flex-col gap-1">
-                                <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary ring-1 ring-inset ring-primary/20 w-fit">In Progress</span>
-                                <h3 className="text-slate-900 dark:text-white text-xl font-bold leading-tight mt-1">DJI Mavic 3 Cine</h3>
-                                <p className="text-slate-500 dark:text-slate-400 text-sm font-normal">ID: #88219</p>
-                                <p className="text-slate-500 dark:text-slate-400 text-sm font-normal">Serial: 1234567890</p>
-                            </div>
-                            <div className="h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-700 relative">
-                                <div className="w-full h-full bg-center bg-no-repeat bg-cover" style={{backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAzbDpRfJ_OWAByMpB7DWBe3iCPt2GqQJtIC1jYrdK5Twzt5orouunPlHQb4zjRb5PA1BVsHEHgv0cP2Jhq-aMF8xCR3adkGa2zxbQGOgyrX0kzjQsdcAIv0Ved91W1SpeMRhF8MwSTtB-Yw4KdvhY8Qu9016XYL0LsLKSW84mdrq0Jj8iRjzFqW9KBMSq0AI7LWsRnPPyTTsD0qRYf1u3wXiCyMofrD9P8Ww6kdkG_XNMyzti-nG6zlbabDhoLUBudYOBIILKa2ko")'}}></div>
+                            <div className="space-y-4">
+                                <label className="block space-y-1.5">
+                                    <span className="text-xs font-semibold text-slate-500 uppercase">Name</span>
+                                    <input className="w-full p-3 rounded-lg bg-slate-50 border-slate-200 dark:bg-slate-900 dark:border-slate-600" placeholder="e.g. Gimbal Ribbon Cable" />
+                                </label>
+                                <label className="block space-y-1.5">
+                                    <span className="text-xs font-semibold text-slate-500 uppercase">Part Number</span>
+                                    <div className="relative">
+                                        <input className="w-full p-3 pl-10 rounded-lg bg-slate-50 border-slate-200 dark:bg-slate-900 dark:border-slate-600" placeholder="e.g. M3-GIM-002" />
+                                        <span className="material-symbols-outlined absolute left-3 top-3.5 text-slate-400 text-[18px]">qr_code</span>
+                                        <button className="absolute right-3 top-3.5 text-primary text-xs font-bold">SCAN</button>
+                                    </div>
+                                </label>
                             </div>
                         </div>
-                        <button className="flex w-full items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-700/50 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors gap-2">
-                            <span className="material-symbols-outlined text-[18px]">info</span>
-                            View Drone Specs
+                        <button className="w-full p-6 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50/50 flex flex-col items-center gap-2 group hover:border-primary transition-all active:scale-[0.99]">
+                            <div className="size-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 group-hover:bg-primary group-hover:text-white transition-colors"><span className="material-symbols-outlined">add</span></div>
+                            <span className="text-sm font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary">Add Another Entry</span>
                         </button>
                     </div>
-                </div>
+                    <div className="p-4 bg-white dark:bg-slate-800 border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                        <label className="flex items-start gap-3 mb-5 cursor-pointer group">
+                            <input type="checkbox" className="mt-1 size-5 rounded border-slate-300 text-primary" />
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2"><span className="font-bold text-sm">Add Warranty</span><span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-bold">FREE</span></div>
+                                <p className="text-xs text-slate-500">Apply standard 3-month protection plan.</p>
+                            </div>
+                        </label>
+                        <button onClick={() => navigate('/status')} className="w-full h-14 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/25 active:scale-[0.98]">
+                            Confirm & Save <span className="material-symbols-outlined">check</span>
+                        </button>
+                    </div>
+                </AppLayout>
+            );
+        };
 
-                {/* Info Grid */}
-                <div className="px-4 pb-2 grid grid-cols-2 gap-3">
-                    <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3 border border-slate-100 dark:border-slate-700 flex flex-col gap-1">
-                        <div className="text-slate-400 dark:text-slate-500 text-xs font-medium uppercase tracking-wider flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[16px]">event</span> Est. Completion
-                        </div>
-                        <div className="text-slate-900 dark:text-white font-bold text-sm">Oct 24, 2023</div>
-                    </div>
-                    <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3 border border-slate-100 dark:border-slate-700 flex flex-col gap-1">
-                        <div className="text-slate-400 dark:text-slate-500 text-xs font-medium uppercase tracking-wider flex items-center gap-1">
-                             <span className="material-symbols-outlined text-[16px]">attach_money</span> Est. Cost
-                        </div>
-                        <div className="text-slate-900 dark:text-white font-bold text-sm">$150.00</div>
-                    </div>
-                     <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3 border border-slate-100 dark:border-slate-700 flex flex-col gap-1">
-                        <div className="text-slate-400 dark:text-slate-500 text-xs font-medium uppercase tracking-wider flex items-center gap-1">
-                             <span className="material-symbols-outlined text-[16px]">engineering</span> Technician
-                        </div>
-                        <div className="text-slate-900 dark:text-white font-bold text-sm">Alex M.</div>
-                    </div>
-                     <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3 border border-slate-100 dark:border-slate-700 flex flex-col gap-1">
-                        <div className="text-slate-400 dark:text-slate-500 text-xs font-medium uppercase tracking-wider flex items-center gap-1">
-                             <span className="material-symbols-outlined text-[16px]">receipt_long</span> Invoice
-                        </div>
-                        <div className="text-slate-900 dark:text-white font-bold text-sm text-primary underline decoration-primary/30">View PDF</div>
-                    </div>
-                </div>
-                
-                {/* Timeline Header */}
-                <div className="px-4 pt-6 pb-2 flex justify-between items-end">
-                    <h2 className="text-slate-900 dark:text-white text-[22px] font-bold leading-tight">Current Progress</h2>
-                    <span className="text-xs font-medium text-slate-500 mb-1">Step 3 of 5</span>
-                </div>
-                
-                {/* Timeline */}
-                <div className="grid grid-cols-[40px_1fr] gap-x-0 px-4 pb-4">
-                    {/* Step 1 */}
-                    <div className="flex flex-col items-center pt-2">
-                        <span className="material-symbols-outlined text-primary text-[24px]">check_circle</span>
-                        <div className="w-[2px] bg-primary h-full min-h-[40px]"></div>
-                    </div>
-                    <div className="flex flex-1 flex-col py-2 pb-6 pl-2">
-                        <p className="text-slate-900 dark:text-white text-base font-bold leading-none">Request Received</p>
-                        <p className="text-slate-500 text-sm font-normal leading-normal mt-1">Oct 20, 10:00 AM</p>
-                    </div>
-                     {/* Step 2 */}
-                    <div className="flex flex-col items-center">
-                        <div className="w-[2px] bg-primary h-3"></div>
-                        <span className="material-symbols-outlined text-primary text-[24px]">check_circle</span>
-                        <div className="w-[2px] bg-primary h-full min-h-[40px]"></div>
-                    </div>
-                    <div className="flex flex-1 flex-col py-2 pb-6 pl-2">
-                        <p className="text-slate-900 dark:text-white text-base font-bold leading-none">Diagnostics Complete</p>
-                        <p className="text-slate-500 text-sm font-normal leading-normal mt-1">Oct 21, 02:30 PM</p>
-                    </div>
-                    {/* Step 3 (Active) */}
-                    <div className="flex flex-col items-center">
-                        <div className="w-[2px] bg-primary h-3"></div>
-                        <div className="bg-primary rounded-full p-1 flex items-center justify-center shadow-lg shadow-primary/30 z-10">
-                            <span className="material-symbols-outlined text-white text-[18px]">build</span>
-                        </div>
-                        <div className="w-[2px] bg-slate-200 dark:bg-slate-700 h-full min-h-[60px]"></div>
-                    </div>
-                    <div className="flex flex-1 flex-col py-2 pb-6 pl-2">
-                        <div className="flex items-center gap-2">
-                            <p className="text-primary text-base font-bold leading-none">Repair in Progress</p>
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                            </span>
-                        </div>
-                        <p className="text-slate-500 text-sm font-normal leading-normal mt-1">Gimbal motor replacement underway.</p>
-                        <div className="mt-3 bg-slate-50 dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
-                            <div className="flex gap-2 items-start">
-                                <span className="material-symbols-outlined text-primary text-[18px] mt-0.5">info</span>
-                                <p className="text-sm text-slate-700 dark:text-slate-300">Technician Note: Waiting for specialized adhesive to cure before final assembly.</p>
+        // --- Screen 8: Dashboard Hub ---
+        const DashboardHubScreen = () => {
+            const navigate = useNavigate();
+            return (
+                <AppLayout>
+                    <header className="sticky top-0 z-20 flex items-center justify-between bg-background-light/80 dark:bg-background-dark/80 px-5 py-4 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
+                        <div className="flex items-center gap-3">
+                            <div className="size-10 bg-primary text-white rounded-xl shadow-lg flex items-center justify-center"><span className="material-symbols-outlined text-2xl">flight_takeoff</span></div>
+                            <div>
+                                <h1 className="text-lg font-bold leading-none">Drone Repair Hub</h1>
+                                <p className="text-xs text-slate-500 mt-1">Technician Dashboard</p>
                             </div>
                         </div>
-                    </div>
-                    {/* Step 4 */}
-                    <div className="flex flex-col items-center">
-                        <div className="w-[2px] bg-slate-200 dark:bg-slate-700 h-3"></div>
-                        <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 text-[24px]">flight_takeoff</span>
-                        <div className="w-[2px] bg-slate-200 dark:bg-slate-700 h-full min-h-[40px]"></div>
-                    </div>
-                    <div className="flex flex-1 flex-col py-2 pb-6 pl-2">
-                        <p className="text-slate-400 dark:text-slate-500 text-base font-medium leading-none">Testing & Calibration</p>
-                        <p className="text-slate-400 dark:text-slate-600 text-sm font-normal leading-normal mt-1">Pending</p>
-                    </div>
-                    {/* Step 5 */}
-                    <div className="flex flex-col items-center pb-2">
-                        <div className="w-[2px] bg-slate-200 dark:bg-slate-700 h-3"></div>
-                        <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 text-[24px]">verified</span>
-                    </div>
-                    <div className="flex flex-1 flex-col py-2 pl-2">
-                        <p className="text-slate-400 dark:text-slate-500 text-base font-medium leading-none">Ready for Pickup</p>
-                        <p className="text-slate-400 dark:text-slate-600 text-sm font-normal leading-normal mt-1">Pending</p>
-                    </div>
-                </div>
-
-                <div className="p-4 mt-2 mb-20">
-                     <h3 className="text-slate-900 dark:text-white text-lg font-bold leading-tight mb-3">Support</h3>
-                     <div className="flex gap-3">
-                        <button className="flex-1 bg-primary hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
-                            <span className="material-symbols-outlined">chat</span>
-                            Message Shop
+                        <button onClick={() => navigate('/')} className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1">
+                            Logout <span className="material-symbols-outlined text-[16px]">logout</span>
                         </button>
-                        <button className="flex-none bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                            <span className="material-symbols-outlined">call</span>
-                        </button>
-                     </div>
-                </div>
-            </Layout>
-        );
-    }
+                    </header>
+                    <div className="flex-1 overflow-y-auto pb-24">
+                        <section className="px-5 pt-8 pb-6">
+                            <h2 className="text-[32px] font-bold leading-[1.1]">Welcome back, <br /><span className="text-primary">Technician</span></h2>
+                            <p className="mt-2 text-slate-500">Select a service module below to begin.</p>
+                        </section>
+                        <nav className="grid grid-cols-2 gap-4 px-5">
+                            {[
+                                { to: '/', icon: 'waving_hand', title: 'Welcome Tour', sub: 'App introduction', color: 'slate' },
+                                { to: '/register', icon: 'add', title: 'New Request', sub: 'Register drone', color: 'primary', highlighted: true },
+                                { to: '/upload-photos', icon: 'photo_camera', title: 'Upload Media', sub: 'Add damage photos', color: 'purple' },
+                                { to: '/contact', icon: 'person_book', title: 'Client Profile', sub: 'Contact details', color: 'orange' },
+                                { to: '/my-drones', icon: 'toc', title: 'Service History', sub: 'My drones list', color: 'emerald' },
+                                { to: '/status', icon: 'build_circle', title: 'Track Repair', sub: 'Check status', color: 'rose' }
+                            ].map((card, i) => (
+                                <button key={i} onClick={() => navigate(card.to)} className={`group relative flex flex-col justify-between gap-4 p-5 rounded-3xl border transition-all hover:scale-[1.02] text-left
+                                    ${card.highlighted ? 'bg-primary/5 border-primary/20' : 'bg-white dark:bg-surface-dark border-white dark:border-slate-800'}`}>
+                                    <div className={`size-12 rounded-2xl flex items-center justify-center transition-colors 
+                                        ${card.color === 'primary' ? 'bg-primary text-white shadow-lg' :
+                                            card.color === 'purple' ? 'bg-purple-50 text-purple-600 dark:bg-purple-900/20' :
+                                                card.color === 'orange' ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/20' :
+                                                    card.color === 'emerald' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20' :
+                                                        card.color === 'rose' ? 'bg-rose-50 text-rose-600 dark:bg-rose-900/20' :
+                                                            'bg-slate-100 text-slate-700 dark:bg-slate-700'}`}>
+                                        <span className="material-symbols-outlined text-2xl">{card.icon}</span>
+                                    </div>
+                                    <div>
+                                        <h3 className={`text-lg font-bold transition-colors ${card.highlighted ? 'text-primary' : 'text-slate-900 dark:text-white'}`}>{card.title}</h3>
+                                        <p className="text-sm text-slate-400 font-medium">{card.sub}</p>
+                                    </div>
+                                </button>
+                            ))}
+                        </nav>
+                    </div>
+                    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-50 flex items-center justify-around border-t bg-white/90 dark:bg-surface-dark/90 px-4 pb-6 pt-3 backdrop-blur-xl border-slate-200 dark:border-slate-800">
+                        {[
+                            { icon: 'grid_view', label: 'Hub', active: true },
+                            { icon: 'account_circle', label: 'Profile' },
+                            { icon: 'settings', label: 'Settings' },
+                            { icon: 'support_agent', label: 'Support' }
+                        ].map((item, idx) => (
+                            <button key={idx} className={`flex flex-col items-center gap-1 flex-1 ${item.active ? 'text-primary' : 'text-slate-400'}`}>
+                                <div className={`flex h-8 items-center px-4 rounded-full ${item.active ? 'bg-primary/10' : ''}`}>
+                                    <span className="material-symbols-outlined text-[24px]">{item.icon}</span>
+                                </div>
+                                <p className="text-[11px] font-bold">{item.label}</p>
+                            </button>
+                        ))}
+                    </nav>
+                </AppLayout>
+            );
+        };
 
-    // --- Main App Component ---
-    const App = () => {
-        return (
-            <MemoryRouter>
-                <Routes>
-                    <Route path="/" element={<HomeScreen />} />
-                    <Route path="/hub" element={<HubScreen />} />
-                    <Route path="/register" element={<RegisterScreen />} />
-                    <Route path="/client-details" element={<ClientDetailsScreen />} />
-                    <Route path="/upload" element={<UploadScreen />} />
-                    <Route path="/my-drones" element={<MyDronesScreen />} />
-                    <Route path="/track" element={<RepairStatusScreen />} />
-                </Routes>
-            </MemoryRouter>
-        );
-    };
+        // --- Router Setup ---
+        const App = () => {
+            return (
+                <MemoryRouter initialEntries={["/"]}>
+                    <Routes>
+                        <Route path="/" element={<WelcomeScreen />} />
+                        <Route path="/my-drones" element={<MyDronesScreen />} />
+                        <Route path="/upload-photos" element={<UploadPhotosScreen />} />
+                        <Route path="/status" element={<RepairStatusScreen />} />
+                        <Route path="/contact" element={<ContactScreen />} />
+                        <Route path="/register" element={<RegisterScreen />} />
+                        <Route path="/add-parts" element={<AddPartsScreen />} />
+                        <Route path="/hub" element={<DashboardHubScreen />} />
+                    </Routes>
+                </MemoryRouter>
+            );
+        };
 
-    const root = createRoot(document.getElementById('root'));
-    root.render(<App />);
-</script>
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
+
 </html>
