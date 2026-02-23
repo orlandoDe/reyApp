@@ -1,0 +1,7 @@
+{
+  "name": "DroneFix Pro",
+  "description": "Professional drone repair management system with AI diagnostics and client portal.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
