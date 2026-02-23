@@ -1,13 +1,22 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { AiDiagnosisResponse } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const getAI = () => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey || apiKey === 'PLACEHOLDER_API_KEY') {
+    return null;
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
 export const analyzeDroneIssue = async (
   model: string,
   issueDescription: string
 ): Promise<AiDiagnosisResponse | null> => {
   try {
+    const ai = getAI();
+    if (!ai) return null;
+
     const prompt = `
       You are an expert drone technician. 
       Drone Model: ${model}
@@ -29,13 +38,13 @@ export const analyzeDroneIssue = async (
           type: Type.OBJECT,
           properties: {
             likelyIssue: { type: Type.STRING },
-            recommendedActions: { 
-              type: Type.ARRAY, 
-              items: { type: Type.STRING } 
+            recommendedActions: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
             },
-            estimatedDifficulty: { 
-              type: Type.STRING, 
-              enum: ["Low", "Medium", "High"] 
+            estimatedDifficulty: {
+              type: Type.STRING,
+              enum: ["Low", "Medium", "High"]
             },
           },
           required: ["likelyIssue", "recommendedActions", "estimatedDifficulty"],
@@ -58,6 +67,9 @@ export const generateClientUpdateMessage = async (
   status: string
 ): Promise<string> => {
   try {
+    const ai = getAI();
+    if (!ai) return `Your ${droneModel} status has been updated to: ${status}.`;
+
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Write a short, professional SMS notification for ${customerName} regarding their ${droneModel}. 
