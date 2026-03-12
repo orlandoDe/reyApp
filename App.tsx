@@ -45,11 +45,15 @@ import {
   ShieldCheck,
   Package,
   Play,
-  CheckSquare
+  CheckSquare,
+  RotateCcw,
+  CircleDollarSign
 } from 'lucide-react';
 import { RepairJob, RepairStatus, AiDiagnosisResponse, RepairPart } from './types';
 import { SignaturePad } from './components/SignaturePad';
 import { analyzeDroneIssue, generateClientUpdateMessage } from './services/geminiService';
+import { fetchAllJobs, createRepairJob, updateJobStatus, addPartsToJob, addImageToJob, softDeleteJob, restoreDeletedJob, permanentDeleteJob, hideJob, restoreHiddenJob } from './services/database';
+import { uploadMultipleImages } from './services/storage';
 
 // --- MOCK DATA ---
 const MOCK_JOBS: RepairJob[] = [
@@ -307,10 +311,11 @@ const SettingsView: React.FC<SettingsProps> = ({ onBack }) => {
 
 export default function App() {
   const [currentView, setCurrentView] = useState<'hub' | 'list' | 'intake' | 'details' | 'addParts' | 'updateStatus' | 'profile' | 'clientList' | 'clientProfile' | 'uploadMediaList' | 'uploadMediaForm' | 'notifications' | 'settings'>('hub');
-  const [jobs, setJobs] = useState<RepairJob[]>(MOCK_JOBS);
+  const [jobs, setJobs] = useState<RepairJob[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'active' | 'all'>('active');
+  const [activeTab, setActiveTab] = useState<'active' | 'all' | 'deleted' | 'hidden'>('active');
   const [selectedPart, setSelectedPart] = useState<RepairPart | null>(null);
   const [isWarrantyApplied, setIsWarrantyApplied] = useState(false);
   
@@ -341,6 +346,7 @@ export default function App() {
     whatsappUpdates: false,
     emailUpdates: true,
     images: [] as string[],
+    imageFiles: [] as File[],
     signature: null as string | null,
     authorized: false
   });
@@ -358,14 +364,56 @@ export default function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showDroneDetailsModal, setShowDroneDetailsModal] = useState(false);
 
+  // Delete/Hide confirmation state
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [confirmPermanentDeleteId, setConfirmPermanentDeleteId] = useState<string | null>(null);
+
   // Client Portal State
   const clientJob = selectedJobId ? jobs.find(j => j.id === selectedJobId) : null;
 
+  // --- LOAD DATA FROM SUPABASE ---
+  const loadJobs = async () => {
+    setIsLoading(true);
+    const data = await fetchAllJobs();
+    setJobs(data);
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    loadJobs();
+  }, []);
+
+  // --- DELETE / HIDE ACTIONS ---
+
+  const handleSoftDelete = async (jobId: string) => {
+    const success = await softDeleteJob(jobId);
+    if (success) { await loadJobs(); setConfirmDeleteId(null); }
+  };
+
+  const handlePermanentDelete = async (jobId: string) => {
+    const success = await permanentDeleteJob(jobId);
+    if (success) { await loadJobs(); setConfirmPermanentDeleteId(null); }
+  };
+
+  const handleRestoreDeleted = async (jobId: string) => {
+    const success = await restoreDeletedJob(jobId);
+    if (success) await loadJobs();
+  };
+
+  const handleHide = async (jobId: string) => {
+    const success = await hideJob(jobId);
+    if (success) await loadJobs();
+  };
+
+  const handleRestoreHidden = async (jobId: string) => {
+    const success = await restoreHiddenJob(jobId);
+    if (success) await loadJobs();
+  };
+
   // --- ACTIONS ---
 
-  const handleRegisterDrone = () => {
-    const newJob: RepairJob = {
-      id: `R-${Math.floor(Math.random() * 10000)}`,
+  const handleRegisterDrone = async () => {
+    const jobData: Omit<RepairJob, 'id'> = {
       customerName: newDrone.customerName,
       customerEmail: newDrone.customerEmail,
       customerPhone: newDrone.customerPhone,
@@ -376,7 +424,7 @@ export default function App() {
       status: RepairStatus.RECEIVED,
       receivedDate: new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'}),
       estimatedCost: 0,
-      images: newDrone.images.length > 0 ? newDrone.images : ['https://picsum.photos/400/300?grayscale'],
+      images: newDrone.images.length > 0 ? newDrone.images : [],
       technicianNotes: aiDiagnosis?.recommendedActions || [],
       parts: [],
       timeline: [{ status: RepairStatus.RECEIVED, date: new Date().toLocaleString() }],
@@ -387,10 +435,21 @@ export default function App() {
       },
       clientSignature: newDrone.signature || undefined
     };
-    setJobs([newJob, ...jobs]);
-    setCurrentView('list');
+
+    const created = await createRepairJob(jobData);
+    if (created) {
+      // Upload image files to Supabase Storage
+      if (newDrone.imageFiles.length > 0) {
+        await uploadMultipleImages(created.id, newDrone.imageFiles);
+      }
+      await loadJobs();
+      setCurrentView('list');
+    } else {
+      alert('Error creating repair job. Please try again.');
+    }
+
     // Reset
-    setNewDrone({ manufacturer: '', model: '', serial: '', issue: '', customerName: '', customerPhone: '', customerEmail: '', smsUpdates: true, whatsappUpdates: false, emailUpdates: true, images: [], signature: null, authorized: false });
+    setNewDrone({ manufacturer: '', model: '', serial: '', issue: '', customerName: '', customerPhone: '', customerEmail: '', smsUpdates: true, whatsappUpdates: false, emailUpdates: true, images: [], imageFiles: [], signature: null, authorized: false });
     setAiDiagnosis(null);
     setIntakeStep(1);
   };
@@ -403,42 +462,24 @@ export default function App() {
     setIsAnalyzing(false);
   };
 
-  const handleStatusUpdate = (jobId: string, newStatus: RepairStatus) => {
-    setJobs(jobs.map(j => {
-      if (j.id === jobId) {
-        return {
-          ...j,
-          status: newStatus,
-          timeline: [...j.timeline, { status: newStatus, date: new Date().toLocaleString() }]
-        };
-      }
-      return j;
-    }));
+  const handleStatusUpdate = async (jobId: string, newStatus: RepairStatus) => {
+    const success = await updateJobStatus(jobId, newStatus);
+    if (success) {
+      await loadJobs();
+    }
   };
 
-  const handleConfirmStatusUpdate = () => {
+  const handleConfirmStatusUpdate = async () => {
       if (!clientJob) return;
 
-      setJobs(jobs.map(j => {
-        if (j.id === clientJob.id) {
-            let updatedJob = { ...j };
-            
-            // Update Status if changed
-            if (statusDraft && statusDraft !== j.status) {
-                updatedJob.status = statusDraft;
-                updatedJob.timeline = [...j.timeline, { status: statusDraft, date: new Date().toLocaleString() }];
-            }
+      const newStatus = statusDraft && statusDraft !== clientJob.status ? statusDraft : clientJob.status;
+      const newCost = parseFloat(costDraft);
+      const cost = !isNaN(newCost) && newCost !== clientJob.estimatedCost ? newCost : undefined;
 
-            // Update Cost if changed
-            const newCost = parseFloat(costDraft);
-            if (!isNaN(newCost) && newCost !== j.estimatedCost) {
-                updatedJob.estimatedCost = newCost;
-            }
-
-            return updatedJob;
-        }
-        return j;
-      }));
+      const success = await updateJobStatus(clientJob.id, newStatus, cost);
+      if (success) {
+        await loadJobs();
+      }
 
       setCurrentView('details');
       setStatusDraft(null);
@@ -451,7 +492,10 @@ export default function App() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const files = Array.from(e.target.files);
-      
+
+      // Keep raw files for upload to Supabase on submit
+      setNewDrone(prev => ({...prev, imageFiles: [...prev.imageFiles, ...files]}));
+
       files.forEach(file => {
         const reader = new FileReader();
         reader.onload = (ev) => {
@@ -487,25 +531,13 @@ export default function App() {
     setIsEditingProfile(false);
   };
 
-  const handleJobImageUpload = (jobId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleJobImageUpload = async (jobId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const files = Array.from(e.target.files);
-      
-      files.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          if (ev.target?.result) {
-            const newImageData = ev.target!.result as string;
-            setJobs(prevJobs => prevJobs.map(job => {
-              if (job.id === jobId) {
-                return { ...job, images: [...job.images, newImageData] };
-              }
-              return job;
-            }));
-          }
-        };
-        reader.readAsDataURL(file);
-      });
+      const urls = await uploadMultipleImages(jobId, files);
+      if (urls.length > 0) {
+        await loadJobs();
+      }
     }
   };
 
@@ -522,34 +554,19 @@ export default function App() {
     setPartsList(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p));
   };
 
-  const handleSaveParts = () => {
+  const handleSaveParts = async () => {
     if (!clientJob) return;
 
-    // Apply warranty if selected
-    const partsToSave = partsList.map(p => ({
-        ...p,
-        warranty: isWarrantyApplied
-    }));
+    const success = await addPartsToJob(clientJob.id, partsList, isWarrantyApplied);
 
-    const updatedJobs = jobs.map(job => {
-        if (job.id === clientJob.id) {
-            const currentParts = job.parts || [];
-            return { 
-                ...job, 
-                parts: [...currentParts, ...partsToSave],
-                // If we add parts, ensure status reflects progress if it was just received
-                status: job.status === RepairStatus.RECEIVED ? RepairStatus.IN_PROGRESS : job.status,
-                // Ensure timeline has IN_PROGRESS if we moved status
-                timeline: job.status === RepairStatus.RECEIVED 
-                    ? [...job.timeline, { status: RepairStatus.IN_PROGRESS, date: new Date().toLocaleString() }]
-                    : job.timeline
-            };
-        }
-        return job;
-    });
+    if (success) {
+      // If status was RECEIVED, advance to IN_PROGRESS
+      if (clientJob.status === RepairStatus.RECEIVED) {
+        await updateJobStatus(clientJob.id, RepairStatus.IN_PROGRESS);
+      }
+      await loadJobs();
+    }
 
-    setJobs(updatedJobs);
-    
     // Cleanup
     setPartsList([{ id: Date.now(), category: 'part', name: '', partNumber: '' }]);
     setIsWarrantyApplied(false);
@@ -718,85 +735,195 @@ export default function App() {
   );
 
   const renderJobList = () => {
-    // Basic filter logic
-    const filteredJobs = activeTab === 'active' 
-      ? jobs.filter(j => j.status !== RepairStatus.COMPLETED && j.status !== RepairStatus.READY)
-      : jobs; 
-
-    const displayJobs = jobs; 
+    // Filter logic based on active tab
+    const displayJobs = activeTab === 'deleted'
+      ? jobs.filter(j => j.isDeleted)
+      : activeTab === 'hidden'
+        ? jobs.filter(j => j.isHidden && !j.isDeleted)
+        : activeTab === 'active'
+          ? jobs.filter(j => !j.isDeleted && !j.isHidden && j.status !== RepairStatus.COMPLETED && j.status !== RepairStatus.READY)
+          : jobs.filter(j => !j.isDeleted && !j.isHidden);
 
     return (
     <div className="flex flex-col h-full bg-slate-50 relative">
       {/* Tab Header */}
       <div className="px-6 pt-8 pb-4 bg-slate-50">
         <div className="flex bg-slate-200/50 p-1 rounded-2xl mb-2">
-            <button 
+            <button
                 onClick={() => setActiveTab('active')}
-                className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all shadow-sm ${activeTab === 'active' ? 'bg-white text-blue-600 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'active' ? 'bg-white text-blue-600 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
             >
                 Active Repairs
             </button>
-            <button 
+            <button
                 onClick={() => setActiveTab('all')}
                 className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'all' ? 'bg-white text-blue-600 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
             >
                 All Drones
             </button>
         </div>
+        <div className="flex gap-2 mt-2">
+            <button
+                onClick={() => setActiveTab('deleted')}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border ${activeTab === 'deleted' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-white text-slate-500 border-slate-100 hover:border-red-200'}`}
+            >
+                <Trash2 size={13} /> Deleted
+                {jobs.filter(j => j.isDeleted).length > 0 && (
+                    <span className="bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full text-[10px] font-bold">{jobs.filter(j => j.isDeleted).length}</span>
+                )}
+            </button>
+            <button
+                onClick={() => setActiveTab('hidden')}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border ${activeTab === 'hidden' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-white text-slate-500 border-slate-100 hover:border-orange-200'}`}
+            >
+                <EyeOff size={13} /> Hidden
+                {jobs.filter(j => j.isHidden && !j.isDeleted).length > 0 && (
+                    <span className="bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full text-[10px] font-bold">{jobs.filter(j => j.isHidden && !j.isDeleted).length}</span>
+                )}
+            </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 pb-24 space-y-4">
+        {displayJobs.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            {activeTab === 'deleted' ? <Trash2 size={40} className="text-slate-200 mb-3" /> : activeTab === 'hidden' ? <EyeOff size={40} className="text-slate-200 mb-3" /> : null}
+            <p className="text-slate-400 text-sm font-medium">
+              {activeTab === 'deleted' ? 'No deleted repairs' : activeTab === 'hidden' ? 'No hidden repairs' : 'No repairs found'}
+            </p>
+          </div>
+        )}
         {displayJobs.map(job => {
           const stats = getProgressStats(job.status);
           return (
-          <div 
-            key={job.id} 
-            onClick={() => { setSelectedJobId(job.id); setCurrentView('details'); }}
-            className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 hover:border-blue-200 transition active:scale-[0.98] cursor-pointer"
-          >
-            <div className="flex gap-4 mb-4">
-                {/* Image Thumbnail */}
-                <div className="w-24 h-24 bg-slate-100 rounded-2xl overflow-hidden shrink-0">
-                    <img src={job.images[0]} alt="Drone" className="w-full h-full object-cover" />
+          <div key={job.id} className="relative">
+            {/* Delete Confirmation Overlay */}
+            {confirmDeleteId === job.id && (
+              <div className="absolute inset-0 bg-white/95 backdrop-blur-sm rounded-3xl z-10 flex flex-col items-center justify-center gap-3 border-2 border-red-200">
+                <Trash2 size={24} className="text-red-500" />
+                <p className="text-sm font-bold text-slate-900">Delete this repair?</p>
+                <p className="text-xs text-slate-500">You can restore it later from Deleted</p>
+                <div className="flex gap-2">
+                  <button onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null); }} className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition">Cancel</button>
+                  <button onClick={(e) => { e.stopPropagation(); handleSoftDelete(job.id); }} className="px-4 py-2 text-xs font-bold text-white bg-red-500 rounded-xl hover:bg-red-600 transition">Delete</button>
                 </div>
-                
-                {/* Content */}
-                    <div className="flex-1 min-w-0 flex flex-col justify-center">
-                    <div className="flex justify-between items-start mb-1">
-                        <div className="flex items-center gap-2">
-                            <h3 className="font-bold text-slate-900 text-lg">{job.drone.manufacturer} {job.drone.model}</h3>
-                            {job.isPaid && (
-                                <div className="bg-emerald-100 text-emerald-600 p-0.5 rounded-full" title="Paid">
-                                    <CircleDollarSign size={14} strokeWidth={3} />
-                                </div>
-                            )}
-                        </div>
-                        <ChevronRight className="text-slate-300" size={20} />
-                    </div>
-                    
-                    <p className="text-xs text-slate-400 font-medium mb-3">SN: {job.drone.serialNumber}</p>
-                    
-                    <div className="flex items-center gap-2">
-                         <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${getStatusLabelStyle(job.status)}`}>
-                             {job.status}
-                         </span>
-                         <span className="text-[10px] text-slate-400">• 2h ago</span>
-                    </div>
-                </div>
-            </div>
+              </div>
+            )}
 
-            {/* Progress Bar Section */}
-            <div className="pt-2">
-                <div className="flex justify-between items-end mb-2">
-                    <span className="text-xs text-slate-400 font-medium">{stats.percent === 100 ? 'Repair Complete' : 'Repair Progress'}</span>
-                    <span className={`text-xs font-bold ${stats.text}`}>{stats.percent}%</span>
+            {/* Permanent Delete Confirmation Overlay */}
+            {confirmPermanentDeleteId === job.id && (
+              <div className="absolute inset-0 bg-white/95 backdrop-blur-sm rounded-3xl z-10 flex flex-col items-center justify-center gap-3 border-2 border-red-200">
+                <Trash2 size={24} className="text-red-600" />
+                <p className="text-sm font-bold text-slate-900">Permanently delete?</p>
+                <p className="text-xs text-red-500 font-medium">This cannot be undone</p>
+                <div className="flex gap-2">
+                  <button onClick={(e) => { e.stopPropagation(); setConfirmPermanentDeleteId(null); }} className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition">Cancel</button>
+                  <button onClick={(e) => { e.stopPropagation(); handlePermanentDelete(job.id); }} className="px-4 py-2 text-xs font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 transition">Delete Forever</button>
                 </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div 
-                        className={`h-full ${stats.color} rounded-full transition-all duration-500`} 
-                        style={{ width: `${stats.percent}%` }}
-                    ></div>
+              </div>
+            )}
+
+            <div
+              onClick={() => { if (activeTab !== 'deleted' && activeTab !== 'hidden') { setSelectedJobId(job.id); setCurrentView('details'); } }}
+              className={`bg-white p-4 rounded-3xl shadow-sm border border-slate-100 transition ${activeTab !== 'deleted' && activeTab !== 'hidden' ? 'hover:border-blue-200 active:scale-[0.98] cursor-pointer' : ''}`}
+            >
+              <div className="flex gap-4 mb-4">
+                  {/* Image Thumbnail */}
+                  <div className="w-24 h-24 bg-slate-100 rounded-2xl overflow-hidden shrink-0">
+                      <img src={job.images[0]} alt="Drone" className="w-full h-full object-cover" />
+                  </div>
+
+                  {/* Content */}
+                      <div className="flex-1 min-w-0 flex flex-col justify-center">
+                      <div className="flex justify-between items-start mb-1">
+                          <div className="flex items-center gap-2">
+                              <h3 className="font-bold text-slate-900 text-lg">{job.drone.manufacturer} {job.drone.model}</h3>
+                              {job.isPaid && (
+                                  <div className="bg-emerald-100 text-emerald-600 p-0.5 rounded-full" title="Paid">
+                                      <CircleDollarSign size={14} strokeWidth={3} />
+                                  </div>
+                              )}
+                          </div>
+                          {activeTab !== 'deleted' && activeTab !== 'hidden' && <ChevronRight className="text-slate-300" size={20} />}
+                      </div>
+
+                      <p className="text-xs text-slate-400 font-medium mb-3">SN: {job.drone.serialNumber}</p>
+
+                      <div className="flex items-center gap-2">
+                           <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${getStatusLabelStyle(job.status)}`}>
+                               {job.status}
+                           </span>
+                           <span className="text-[10px] text-slate-400">• 2h ago</span>
+                      </div>
+                  </div>
+              </div>
+
+              {/* Progress Bar Section */}
+              <div className="pt-2">
+                  <div className="flex justify-between items-end mb-2">
+                      <span className="text-xs text-slate-400 font-medium">{stats.percent === 100 ? 'Repair Complete' : 'Repair Progress'}</span>
+                      <span className={`text-xs font-bold ${stats.text}`}>{stats.percent}%</span>
+                  </div>
+                  <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                          className={`h-full ${stats.color} rounded-full transition-all duration-500`}
+                          style={{ width: `${stats.percent}%` }}
+                      ></div>
+                  </div>
+              </div>
+
+              {/* Action Icons Row */}
+              {activeTab !== 'deleted' && activeTab !== 'hidden' && (
+                <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-slate-50">
+                    <button
+                        onClick={(e) => { e.stopPropagation(); handleHide(job.id); }}
+                        className="p-2 rounded-xl text-slate-400 hover:text-orange-500 hover:bg-orange-50 transition"
+                        title="Hide repair"
+                    >
+                        <EyeOff size={16} />
+                    </button>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(job.id); }}
+                        className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition"
+                        title="Delete repair"
+                    >
+                        <Trash2 size={16} />
+                    </button>
                 </div>
+              )}
+
+              {/* Restore / Permanent Delete for Deleted tab */}
+              {activeTab === 'deleted' && (
+                <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-slate-50">
+                    <button
+                        onClick={(e) => { e.stopPropagation(); handleRestoreDeleted(job.id); }}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-blue-600 hover:bg-blue-50 transition"
+                        title="Restore repair"
+                    >
+                        <RotateCcw size={14} /> Restore
+                    </button>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setConfirmPermanentDeleteId(job.id); }}
+                        className="flex items-center gap-1.5 p-2 rounded-xl text-red-400 hover:text-red-600 hover:bg-red-50 transition"
+                        title="Permanently delete"
+                    >
+                        <X size={16} strokeWidth={3} />
+                    </button>
+                </div>
+              )}
+
+              {/* Restore for Hidden tab */}
+              {activeTab === 'hidden' && (
+                <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-slate-50">
+                    <button
+                        onClick={(e) => { e.stopPropagation(); handleRestoreHidden(job.id); }}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-blue-600 hover:bg-blue-50 transition"
+                        title="Restore repair"
+                    >
+                        <RotateCcw size={14} /> Restore
+                    </button>
+                </div>
+              )}
             </div>
           </div>
         )})}
@@ -848,8 +975,8 @@ export default function App() {
                  <div className="w-8"></div>
             </header>
 
-            <div className="flex-1 overflow-y-auto px-4 py-6 pb-32 space-y-6">
-                
+            <div className="flex-1 overflow-y-auto px-4 py-6 pb-40 space-y-6">
+
                 {/* Section 1: Job Status Selection */}
                 <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
                     <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
@@ -980,9 +1107,9 @@ export default function App() {
                 <span>{Math.round((intakeStep / 3) * 100)}%</span>
             </div>
         </header>
-        
-        <div className="flex-1 overflow-y-auto px-6 py-6 pb-24 space-y-6">
-            
+
+        <div className="flex-1 overflow-y-auto px-6 py-6 pb-40 space-y-6">
+
             {/* STEP 1: CLIENT DETAILS */}
             {intakeStep === 1 && (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
@@ -1231,57 +1358,6 @@ export default function App() {
                         </div>
                     </div>
 
-                    {/* AI Section */}
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                             <h3 className="font-bold text-slate-900 text-sm">AI Diagnosis</h3>
-                             {!aiDiagnosis && (
-                                <button 
-                                    onClick={runAiDiagnosis}
-                                    disabled={isAnalyzing}
-                                    className="text-xs font-bold text-purple-600 flex items-center gap-1 hover:bg-purple-50 px-2 py-1 rounded-lg transition"
-                                >
-                                    {isAnalyzing ? 'Analyzing...' : <>Run Analysis <Sparkles size={12} /></>}
-                                </button>
-                             )}
-                        </div>
-
-                        {aiDiagnosis ? (
-                           <div className="bg-purple-50 border border-purple-100 rounded-2xl p-5 shadow-sm animate-in fade-in slide-in-from-top-4">
-                             <div className="flex items-start gap-3">
-                               <div className="p-2 bg-white rounded-xl shadow-sm text-purple-600">
-                                 <Sparkles size={18} />
-                               </div>
-                               <div>
-                                 <h4 className="font-bold text-slate-900 text-sm">Diagnosis Complete</h4>
-                                 <p className="text-sm text-slate-700 mt-2 font-medium">{aiDiagnosis.likelyIssue}</p>
-                                 
-                                 <div className="mt-4 space-y-2">
-                                     <p className="text-xs font-bold text-purple-900 uppercase tracking-wide">Recommended Actions</p>
-                                     <ul className="text-xs text-slate-600 space-y-1 list-disc pl-4">
-                                         {aiDiagnosis.recommendedActions.map((action, i) => (
-                                             <li key={i}>{action}</li>
-                                         ))}
-                                     </ul>
-                                 </div>
-
-                                 <div className="mt-4 flex gap-2">
-                                    <span className="text-[10px] bg-white px-2 py-1 rounded-lg border border-purple-100 text-purple-700 font-bold uppercase tracking-wide">
-                                        {aiDiagnosis.estimatedDifficulty} Difficulty
-                                    </span>
-                                 </div>
-                               </div>
-                             </div>
-                           </div>
-                        ) : (
-                            <div className="border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center">
-                                <Sparkles className="text-slate-300 mb-2" size={24} />
-                                <p className="text-sm text-slate-500">Run AI diagnosis to get preliminary insights on the repair.</p>
-                                <button onClick={runAiDiagnosis} className="mt-3 text-xs font-bold text-purple-600 hover:text-purple-700">Analyze Now</button>
-                            </div>
-                        )}
-                    </div>
-
                     {/* Authorization & Signature Section */}
                     <div className="mt-8 space-y-6">
                         <h3 className="font-bold text-slate-900 text-lg">Authorization</h3>
@@ -1332,7 +1408,7 @@ export default function App() {
             )}
 
             {/* Footer Button */}
-            <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-slate-50 md:absolute md:rounded-b-[2.5rem]">
+            <div className="absolute bottom-0 left-0 right-0 p-6 bg-white border-t border-slate-50 md:rounded-b-[2.5rem]">
                 <button 
                     onClick={() => intakeStep < 3 ? setIntakeStep(s => s + 1) : handleRegisterDrone()}
                     disabled={intakeStep === 3 && (!newDrone.authorized || !newDrone.signature)}
@@ -2381,7 +2457,13 @@ export default function App() {
       {/* Mobile Shell Container - matches the "App" look from the image */}
       <div className="w-full h-[100dvh] md:h-[850px] md:max-w-[420px] bg-white md:rounded-[2.5rem] shadow-2xl overflow-hidden relative border-[8px] border-white ring-1 ring-slate-900/5">
         
-        {currentView === 'hub' && renderHub()}
+        {isLoading && (
+          <div className="flex flex-col items-center justify-center h-full gap-3">
+            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-slate-500 font-medium">Loading...</p>
+          </div>
+        )}
+        {!isLoading && currentView === 'hub' && renderHub()}
         {currentView === 'list' && renderJobList()}
         {currentView === 'intake' && renderIntake()}
         {currentView === 'details' && renderJobDetails()}

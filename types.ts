@@ -38,6 +38,8 @@ export interface RepairJob {
   technician?: string; // Added technician field
   clientSignature?: string; // Data URL
   parts?: RepairPart[]; // Added parts tracking
+  isDeleted?: boolean;
+  isHidden?: boolean;
   timeline: { status: RepairStatus; date: string }[];
   notificationPreferences?: {
     sms: boolean;
